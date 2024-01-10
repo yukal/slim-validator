@@ -1,5 +1,5 @@
 <a name="v0.1.0-dev.1"></a>
-## [v0.1.0-dev.1](https://github.com/yukal/slim-validator/compare/v0.0.0...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
+## [v0.1.0-dev.1](https://github.com/yukal/slim-validator/compare/508a21b37269cf999d0527f03af20e0b19a34f0e...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
 
 ### Chore
 
@@ -19,7 +19,7 @@
 
 ### Tests
 
-- **validate:**  non-zero ([affebf06](https://github.com/yukal/slim-validator/commit/affebf063a75a1446355d5107145cb017dd0fc23))
+- **core:**  validate non-zero ([affebf06](https://github.com/yukal/slim-validator/commit/affebf063a75a1446355d5107145cb017dd0fc23))
 
 
 <a name="v0.0.0"></a>
