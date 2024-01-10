@@ -117,6 +117,425 @@ func TestValidateMatch(t *testing.T) {
 	})
 }
 
+// go test -v -run TestValidateEachMatch .
+
+func TestValidateEachMatch(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "eachMatch"`, func() {
+		msgInvalidRule := "hash " + MsgInvalidRule
+		msgInvalidValue := "hash " + MsgNotValid
+
+		g.Describe(`array`, func() {
+			type Array struct {
+				Hash  [2]string `json:"hash"`
+				Empty [0]string `json:"empty"`
+			}
+
+			g.It("success when the element value matches the mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when given an empty list", func() {
+				filter := Filter{
+					{
+						Field: "Empty",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Empty: [0]string{},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"Z0zZ0z19711zZz3z73z41z909z66zZzZ",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when at least 1 value is empty", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when missing mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch"},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", ``},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty rule", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{},
+					},
+				}
+
+				hints := filter.Validate(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			type Slice struct {
+				Hash []string `json:"hash"`
+			}
+
+			g.It("success when the element value matches the mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when given an empty list", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"Z0zZ0z19711zZz3z73z41z909z66zZzZ",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when at least 1 value is empty", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when missing mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch"},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", ``},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty rule", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			type Map struct {
+				Hash map[int]string `json:"hash"`
+			}
+
+			g.It("success when the element value matches the mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when given an empty list", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "Z0zZ0z19711zZz3z73z41z909z66zZzZ",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when at least 1 value is empty", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidValue)
+			})
+
+			g.It("failure when missing mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch"},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"eachMatch", ``},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+
+			g.It("failure when given an empty rule", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{},
+					},
+				}
+
+				hints := filter.Validate(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(msgInvalidRule)
+			})
+		})
+
+	})
+}
+
 // go test -v -run TestValidateNonZero .
 
 func TestValidateNonZero(t *testing.T) {
