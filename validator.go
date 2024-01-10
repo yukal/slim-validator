@@ -2,6 +2,7 @@ package validator
 
 import (
 	"reflect"
+	"regexp"
 )
 
 const (
@@ -13,6 +14,8 @@ const (
 	MsgInvalidRule    = "has invalid rule"
 	MsgInvalidBodyVal = "invalid body value"
 )
+
+type Rule [2]any
 
 type FilterItem struct {
 	Field    string
@@ -64,6 +67,11 @@ func (filter Filter) Validate(data any) []string {
 
 func checkField(rules, value reflect.Value) string {
 	switch rules.Type().String() {
+	case "validator.Rule":
+		action := rules.Index(0).Elem().String()
+		proto := rules.Index(1).Elem()
+
+		return compare(action, proto, value)
 
 	case "string":
 		action := rules.String()
@@ -88,5 +96,24 @@ func compare(action string, proto, value reflect.Value) string {
 		return ""
 	}
 
+	if !proto.IsValid() {
+		return MsgInvalidRule
+	}
+
+	switch action {
+	case "match":
+		if !IsMatch(proto, value) {
+			return MsgNotValid
+		}
+	}
+
 	return ""
+}
+
+func IsMatch(reg, value reflect.Value) (flag bool) {
+	if reg.Kind() == reflect.String && value.Kind() == reflect.String {
+		flag, _ = regexp.MatchString(reg.String(), value.String())
+	}
+
+	return
 }
