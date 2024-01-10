@@ -11,6 +11,112 @@ import (
 // go test -v -cover .
 // go test -v -cover -run TestValidate .
 
+// go test -v -run TestValidateMatch .
+
+func TestValidateMatch(t *testing.T) {
+	type Article struct {
+		Hash string `json:"hash"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "match"`, func() {
+		msgInvalidRule := "hash " + MsgInvalidRule
+		msgInvalidValue := "hash " + MsgNotValid
+
+		g.It("success when the value matches the mask", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match", `(?i)^[0-9a-f]{32}$`},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
+			})
+
+			g.Assert(len(hints)).Equal(0, hints)
+		})
+
+		g.It("success when given an empty mask", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match", ``},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
+			})
+
+			g.Assert(len(hints)).Equal(0, hints)
+		})
+
+		g.It("failure when the value does not match the mask", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match", `(?i)^[0-9a-f]{32}$`},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Hash: "Z0zZ0z19711zZz3z73z41z909z66zZzZ",
+			})
+
+			g.Assert(len(hints)).Equal(1, hints)
+			g.Assert(hints[0]).Equal(msgInvalidValue)
+		})
+
+		g.It("failure when missing rule value", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match"},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
+			})
+
+			g.Assert(len(hints)).Equal(1, hints)
+			g.Assert(hints[0]).Equal(msgInvalidRule)
+		})
+
+		g.It("failure when given an empty rule", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
+			})
+
+			g.Assert(len(hints)).Equal(1, hints)
+			g.Assert(hints[0]).Equal(msgInvalidRule)
+		})
+
+		g.It("failure when given an empty value", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match", `(?i)^[0-9a-f]{32}$`},
+				},
+			}
+
+			hints := filter.Validate(Article{})
+			g.Assert(len(hints)).Equal(1, hints)
+			g.Assert(hints[0]).Equal(msgInvalidValue)
+		})
+	})
+}
+
 // go test -v -run TestValidateNonZero .
 
 func TestValidateNonZero(t *testing.T) {

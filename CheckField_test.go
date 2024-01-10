@@ -31,5 +31,23 @@ func TestCheckField(t *testing.T) {
 				g.Assert(hint).Equal(MsgEmpty, hint)
 			})
 		})
+
+		g.Describe(`validator.Rule`, func() {
+			g.It("return empty hint", func() {
+				rules := reflect.ValueOf(Rule{"match", `^\+38\d{10}$`})
+				value := reflect.ValueOf("+380001234567")
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("", hint)
+			})
+
+			g.It("return filled hint", func() {
+				rules := reflect.ValueOf(Rule{"match", `^\+38\d{10}$`})
+				value := reflect.ValueOf("+38(000)123-45-67")
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal(MsgNotValid, hint)
+			})
+		})
 	})
 }
