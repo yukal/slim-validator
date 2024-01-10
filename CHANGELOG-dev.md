@@ -1,5 +1,15 @@
+<a name="v0.3.0"></a>
+## [v0.3.0](https://github.com/yukal/slim-validator/compare/86a3531bbdfc299dfa7ca2b7f5877f9f29576ff1...141dc870603bf6fd7c6a03e908ea3a94c1785ce8) - 2024-01-10
+
+### New Features
+- **core:**  validate each-match ([86a3531b](https://github.com/yukal/slim-validator/commit/86a3531bbdfc299dfa7ca2b7f5877f9f29576ff1))
+
+### Tests
+- **core:**  validate each-match ([141dc870](https://github.com/yukal/slim-validator/commit/141dc870603bf6fd7c6a03e908ea3a94c1785ce8))
+
+
 <a name="v0.2.0"></a>
-## [v0.2.0](https://github.com/yukal/slim-validator/compare/508a21b37269cf999d0527f03af20e0b19a34f0e...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
+## [v0.2.0](https://github.com/yukal/slim-validator/compare/a80a39e3fc68bdf0ab6cf7971838d6d567252c8b...b09be68b53bd2888baa3ae1087f5e86f87de0574) - 2024-01-10
 
 ### Chore
 - **changelog:**  update changelog ([a80a39e3](https://github.com/yukal/slim-validator/commit/a80a39e3fc68bdf0ab6cf7971838d6d567252c8b))
