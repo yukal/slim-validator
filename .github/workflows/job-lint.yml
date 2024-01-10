@@ -1,0 +1,25 @@
+# https://github.com/actions/setup-go
+#
+# golangci-lint
+# https://github.com/marketplace/actions/run-golangci-lint
+# https://github.com/golangci/golangci-lint-action
+
+name: job-lint
+
+on:
+  workflow_call:
+
+jobs:
+  golangci:
+    # name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+      - uses: actions/checkout@v4
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
