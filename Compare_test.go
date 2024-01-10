@@ -12,6 +12,49 @@ import (
 // go test -v -cover .
 // go test -v -cover -run TestCompare .
 
+// go test -v -run TestCompareMatch .
+
+func TestCompareMatch(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "match"`, func() {
+		g.It("success when value match the mask", func() {
+			proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+			value := reflect.ValueOf("b0fb0c19711bcf3b73f41c909f66bded")
+
+			g.Assert(compare("match", proto, value)).Equal("")
+		})
+
+		g.It("failure when given an empty mask", func() {
+			proto := reflect.ValueOf(``)
+			value := reflect.ValueOf("abra")
+
+			g.Assert(compare("match", proto, value)).Equal("")
+		})
+
+		g.It("failure when a value does not match the mask", func() {
+			proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+			value := reflect.ValueOf("Z0fz0c19711bcf3b73f41c909f66bded")
+
+			g.Assert(compare("match", proto, value)).Equal(MsgNotValid)
+		})
+
+		g.It("failure when given invalid mask", func() {
+			proto := reflect.ValueOf(nil)
+			value := reflect.ValueOf("cadabra")
+
+			g.Assert(compare("match", proto, value)).Equal(MsgInvalidRule)
+		})
+
+		g.It(`failure when given invalid value`, func() {
+			proto := reflect.ValueOf(``)
+			value := reflect.ValueOf(nil)
+
+			g.Assert(compare("match", proto, value)).Equal(MsgInvalidValue)
+		})
+	})
+}
+
 // go test -v -run TestCompareNonZero .
 
 func TestCompareNonZero(t *testing.T) {

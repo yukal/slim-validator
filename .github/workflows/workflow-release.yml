@@ -1,0 +1,27 @@
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+# https://github.com/actions/checkout
+# https://github.com/marketplace/actions/action-for-semantic-release
+
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    # name: Test
+    uses: ./.github/workflows/job-test.yml
+
+  release:
+    # name: Release
+    needs: test
+    uses: ./.github/workflows/job-release.yml
+    secrets: inherit
+    permissions:
+      contents: write       # to be able to publish a GitHub release
+      issues: write         # to be able to comment on released issues
+      pull-requests: write  # to be able to comment on released pull requests

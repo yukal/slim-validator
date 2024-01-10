@@ -1,5 +1,26 @@
-<a name="v0.1.0-dev.1"></a>
-## [v0.1.0-dev.1](https://github.com/yukal/slim-validator/compare/v0.0.0...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
+<a name="v0.2.0"></a>
+## [v0.2.0](https://github.com/yukal/slim-validator/compare/508a21b37269cf999d0527f03af20e0b19a34f0e...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
+
+### Chore
+- **changelog:**  update changelog ([a80a39e3](https://github.com/yukal/slim-validator/commit/a80a39e3fc68bdf0ab6cf7971838d6d567252c8b))
+
+### Continuous Integration
+- **action:**  add release workflow ([9662b8ec](https://github.com/yukal/slim-validator/commit/9662b8ec1e25fdef38bfd10418d4a0b93c50c059))
+- **action:**  add release job ([456ddcb6](https://github.com/yukal/slim-validator/commit/456ddcb67c3271efe2e9c2e11feb5a8d3a744e63))
+- **release:**  add semantic release config ([b09be68b](https://github.com/yukal/slim-validator/commit/b09be68b53bd2888baa3ae1087f5e86f87de0574))
+
+### Docs
+- **readme:**  add description with examples ([167b0bc2](https://github.com/yukal/slim-validator/commit/167b0bc233ca865691df94e3921295697b39fe1b))
+
+### Feat
+- **core:**  validate match ([e88c83d7](https://github.com/yukal/slim-validator/commit/e88c83d784c4f6cb11a58ce7bd78aad6bb52ab03))
+
+### Test
+- **core:**  validate match ([c085f2f4](https://github.com/yukal/slim-validator/commit/c085f2f4a0450ce03c74503a29be3dc074d441cc))
+
+
+<a name="v0.1.0"></a>
+## [v0.1.0](https://github.com/yukal/slim-validator/compare/508a21b37269cf999d0527f03af20e0b19a34f0e...291e5bf31c97cac212d5f5ca47734afeecae55df) - 2024-01-10
 
 ### Chore
 
@@ -19,7 +40,7 @@
 
 ### Tests
 
-- **validate:**  non-zero ([affebf06](https://github.com/yukal/slim-validator/commit/affebf063a75a1446355d5107145cb017dd0fc23))
+- **core:**  validate non-zero ([affebf06](https://github.com/yukal/slim-validator/commit/affebf063a75a1446355d5107145cb017dd0fc23))
 
 
 <a name="v0.0.0"></a>
