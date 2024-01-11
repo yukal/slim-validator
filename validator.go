@@ -20,6 +20,7 @@ const (
 	MsgInvalidBodyVal = "invalid body value"
 )
 
+type Group []any
 type Rule [2]any
 
 type FilterItem struct {
@@ -72,6 +73,18 @@ func (filter Filter) Validate(data any) []string {
 
 func checkField(rules, value reflect.Value) string {
 	switch rules.Type().String() {
+	case "validator.Group":
+
+		for n := 0; n < rules.Len(); n++ {
+			item := reflect.Indirect(reflect.ValueOf(
+				rules.Index(n).Interface(),
+			))
+
+			if hint := checkField(item, value); hint != "" {
+				return hint
+			}
+		}
+
 	case "validator.Rule":
 		action := rules.Index(0).Elem().String()
 		proto := rules.Index(1).Elem()
