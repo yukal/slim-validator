@@ -1,13 +1,18 @@
 package validator
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
+	"unicode/utf8"
 )
 
 const (
 	NON_ZERO = "NonZero"
 
+	MsgMinStrLen      = "must contain at least %d characters"
+	MsgMinSetLen      = "must contain at least %d items"
+	MsgMin            = "must be at least %d"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
 	MsgInvalidValue   = "has invalid value"
@@ -101,6 +106,9 @@ func compare(action string, proto, value reflect.Value) string {
 	}
 
 	switch action {
+	case "min":
+		return filterMin(proto, value)
+
 	case "match":
 		if !IsMatch(proto, value) {
 			return MsgNotValid
@@ -114,6 +122,29 @@ func compare(action string, proto, value reflect.Value) string {
 		if !IsEachMatch(proto.String(), value) {
 			return MsgNotValid
 		}
+	}
+
+	return ""
+}
+
+func filterMin(proto, value reflect.Value) string {
+	hint := ""
+
+	switch value.Kind() {
+	case reflect.String:
+		value = reflect.ValueOf(utf8.RuneCountInString(value.String()))
+		hint = fmt.Sprintf(MsgMinStrLen, proto.Interface())
+
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		value = reflect.ValueOf(value.Len())
+		hint = fmt.Sprintf(MsgMinSetLen, proto.Interface())
+
+	default:
+		hint = fmt.Sprintf(MsgMin, proto.Interface())
+	}
+
+	if !IsMin(proto.Interface(), value.Interface()) {
+		return hint
 	}
 
 	return ""
