@@ -28,7 +28,7 @@ jobs:
 
   test:
     name: Test
-    needs: lint
+    needs: golangci
     runs-on: ubuntu-latest
     strategy:
       matrix:
