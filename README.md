@@ -19,8 +19,8 @@ filter := validator.Filter{
   },
   {
     Field: "Sex",
-    // sex must be exactly 2
-    Check: validator.Rule{"eq", 2},
+    // sex must be in the range 1..2
+    Check: validator.Range{1, 2},
   },
   {
     Field: "Title",
@@ -202,5 +202,38 @@ When working with **string** values, the validator will check if the length is e
 {
   Field: "Title",
   Check: validator.Rule{"eq", 15},
+}
+```
+
+#### Range
+
+Compares the compliance between the prototype and the value, the value must match the specified range between the minimum and maximum threshold. The types that this rule works with are:
+**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
+
+```go
+// sex must be in the range 1..2
+{
+  Field: "Sex",
+  Check: validator.Range{1, 2},
+}
+```
+
+When working with kinds of **array**, **slice**, and **map**, the validator will check whether the collection capacity matches the specified range
+
+```go
+// images must contain 5..8 items
+{
+  Field: "Images",
+  Check: validator.Range{5, 8},
+}
+```
+
+When working with **string** values, the validator will check whether the length matches the specified range. It uses [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
+
+```go
+// title must contain 1..200 characters
+{
+  Field: "Title",
+  Check: validator.Range{1, 200},
 }
 ```
