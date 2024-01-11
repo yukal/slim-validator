@@ -6,6 +6,7 @@ A simple validation package for Go
 ```go
 type Article struct {
   Id     uint     `json:"id"`
+  Title  string   `json:"title"`
   Phone  string   `json:"phone"`
   Images []string `json:"images"`
 }
@@ -16,13 +17,23 @@ filter := validator.Filter{
     Check: validator.NON_ZERO,
   },
   {
+    Field: "Title",
+    // title must contain up to 15 characters
+    Check: validator.Rule{"max", 15},
+  },
+  {
     Field: "Phone",
     Check: validator.Rule{"match", `^\+38\d{10}$`},
   },
   {
     Field: "Images",
     Check: validator.Group{
+      // images must contain at least 1 items
       validator.Rule{"min", 1},
+
+      // images must contain up to 3 items
+      validator.Rule{"max", 3},
+
       validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
     },
   },
@@ -126,6 +137,52 @@ filter := validator.Filter{
   {
     Field: "Title",
     Check: validator.Rule{"min", 1},
+  },
+}
+```
+
+#### Max
+
+Compares the compliance between the prototype and value, the value must correspond to the specified prototype within the maximum threshold. The types that this rule works with are:
+**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
+
+```go
+proto := 10
+
+{
+  Field: "Images",
+  Check: validator.Rule{"max", proto},
+}
+```
+
+When working with kinds of **array**, **slice**, and **map**, the maximum number (according to the specified prototype) of elements inside will check
+
+```go
+article := Article{
+  Images: []string{"img1", "img2", "img3", "img4"},
+}
+
+filter := validator.Filter{
+  {
+    Field: "Images",
+    // images must contain up to 3 items
+    Check: validator.Rule{"max", 3},
+  },
+}
+```
+
+When working with **string** values, the maximum length (according to the specified prototype) of the string will be checked using the [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
+
+```go
+Article{
+  Title: string{"Somebody to love"},
+}
+
+filter := validator.Filter{
+  {
+    Field: "Title",
+    // title must contain up to 15 characters
+    Check: validator.Rule{"max", 15},
   },
 }
 ```
