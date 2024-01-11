@@ -13,12 +13,15 @@ const (
 	MsgMinStrLen      = "must contain at least %d characters"
 	MsgMaxStrLen      = "must contain up to %d characters"
 	MsgEqStrLen       = "must contain exactly %d characters"
+	MsgRangeStrLen    = "must contain %d..%d characters"
 	MsgMinSetLen      = "must contain at least %d items"
 	MsgMaxSetLen      = "must contain up to %d items"
 	MsgEqSetLen       = "must contain exactly %d items"
+	MsgRangeSetLen    = "must contain %d..%d items"
 	MsgMin            = "must be at least %d"
 	MsgMax            = "must be up to %d"
 	MsgEq             = "must be exactly %d"
+	MsgRange          = "must be in the range %d..%d"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
 	MsgInvalidValue   = "has invalid value"
@@ -27,6 +30,7 @@ const (
 )
 
 type Group []any
+type Range [2]any
 type Rule [2]any
 
 type FilterItem struct {
@@ -91,6 +95,9 @@ func checkField(rules, value reflect.Value) string {
 			}
 		}
 
+	case "validator.Range":
+		return compare("range", rules, value)
+
 	case "validator.Rule":
 		action := rules.Index(0).Elem().String()
 		proto := rules.Index(1).Elem()
@@ -125,6 +132,9 @@ func compare(action string, proto, value reflect.Value) string {
 	}
 
 	switch action {
+	case "range":
+		return filterRange(proto, value)
+
 	case "min":
 		return filterMin(proto, value)
 
@@ -147,6 +157,39 @@ func compare(action string, proto, value reflect.Value) string {
 		if !IsEachMatch(proto.String(), value) {
 			return MsgNotValid
 		}
+	}
+
+	return ""
+}
+
+func filterRange(proto, value reflect.Value) string {
+	hint := ""
+
+	valMin := proto.Index(0)
+	valMax := proto.Index(1)
+
+	if valMin.IsNil() || valMax.IsNil() {
+		return MsgInvalidRule
+	}
+
+	switch value.Kind() {
+	case reflect.String:
+		value = reflect.ValueOf(utf8.RuneCountInString(value.String()))
+		hint = fmt.Sprintf(MsgRangeStrLen, valMin.Interface(), valMax.Interface())
+
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		value = reflect.ValueOf(value.Len())
+		hint = fmt.Sprintf(MsgRangeSetLen, valMin.Interface(), valMax.Interface())
+
+	default:
+		hint = fmt.Sprintf(MsgRange, valMin.Interface(), valMax.Interface())
+	}
+
+	if !IsMin(valMin.Interface(), value.Interface()) {
+		return hint
+	}
+	if !IsMax(valMax.Interface(), value.Interface()) {
+		return hint
 	}
 
 	return ""
