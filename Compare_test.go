@@ -737,6 +737,33 @@ func TestCompareRange(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareYear .
+
+func TestCompareYear(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "year"`, func() {
+		g.It("success when the value matches a specific year", func() {
+			tm, err := time.Parse(time.RFC3339, "2023-12-25T16:04:05Z")
+			g.Assert(err).IsNil(err)
+
+			proto := reflect.ValueOf(2023)
+			value := reflect.ValueOf(tm)
+
+			result := compare("year", proto, value)
+			g.Assert(result).Equal("")
+		})
+
+		g.It("failure when the value is not match", func() {
+			proto := reflect.ValueOf(2024)
+			value := reflect.ValueOf(*new(time.Time))
+
+			result := compare("year", proto, value)
+			g.Assert(result).Equal("must be exactly 2024")
+		})
+	})
+}
+
 // go test -v -run TestCompareMatch .
 
 func TestCompareMatch(t *testing.T) {

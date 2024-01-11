@@ -1209,6 +1209,49 @@ func TestValidateRange(t *testing.T) {
 	})
 }
 
+// go test -v -run TestValidateYear .
+
+func TestValidateYear(t *testing.T) {
+	type Article struct {
+		Date time.Time `json:"date"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "year"`, func() {
+		g.It("success when the value matches a specific year", func() {
+			tm, err := time.Parse(time.RFC3339, "2024-12-25T16:04:05Z")
+			g.Assert(err).IsNil(err)
+
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"year", 2024},
+				},
+			}
+
+			hints := filter.Validate(Article{Date: tm})
+			g.Assert(len(hints)).Equal(0, hints)
+		})
+
+		g.It("failure when the value is not match", func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"year", 2024},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Date: *new(time.Time),
+			})
+
+			g.Assert(len(hints)).Equal(1, hints)
+			g.Assert(hints[0]).Equal("date must be exactly 2024")
+		})
+	})
+}
+
 // go test -v -run TestValidateMatch .
 
 func TestValidateMatch(t *testing.T) {
