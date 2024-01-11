@@ -11,8 +11,11 @@ const (
 	NON_ZERO = "NonZero"
 
 	MsgMinStrLen      = "must contain at least %d characters"
+	MsgMaxStrLen      = "must contain up to %d characters"
 	MsgMinSetLen      = "must contain at least %d items"
+	MsgMaxSetLen      = "must contain up to %d items"
 	MsgMin            = "must be at least %d"
+	MsgMax            = "must be up to %d"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
 	MsgInvalidValue   = "has invalid value"
@@ -122,6 +125,9 @@ func compare(action string, proto, value reflect.Value) string {
 	case "min":
 		return filterMin(proto, value)
 
+	case "max":
+		return filterMax(proto, value)
+
 	case "match":
 		if !IsMatch(proto, value) {
 			return MsgNotValid
@@ -157,6 +163,29 @@ func filterMin(proto, value reflect.Value) string {
 	}
 
 	if !IsMin(proto.Interface(), value.Interface()) {
+		return hint
+	}
+
+	return ""
+}
+
+func filterMax(proto, value reflect.Value) string {
+	hint := ""
+
+	switch value.Kind() {
+	case reflect.String:
+		value = reflect.ValueOf(utf8.RuneCountInString(value.String()))
+		hint = fmt.Sprintf(MsgMaxStrLen, proto.Interface())
+
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		value = reflect.ValueOf(value.Len())
+		hint = fmt.Sprintf(MsgMaxSetLen, proto.Interface())
+
+	default:
+		hint = fmt.Sprintf(MsgMax, proto.Interface())
+	}
+
+	if !IsMax(proto.Interface(), value.Interface()) {
 		return hint
 	}
 
