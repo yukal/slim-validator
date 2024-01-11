@@ -21,7 +21,10 @@ filter := validator.Filter{
   },
   {
     Field: "Images",
-    Check: validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
+    Check: validator.Group{
+      validator.Rule{"min", 1},
+      validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
+    },
   },
 }
 
@@ -60,7 +63,7 @@ The types that this rule works with are:
 #### Match
 
 Checks if the passed value matches the regular expression.
-This rule only works with: **string**
+This rule only works with **string**
 
 ```go
 {
@@ -71,11 +74,43 @@ This rule only works with: **string**
 
 #### Each Match
 
-Check whether any element of a collection matches a regular expression. This rule works with **array**, **slice**, and **map** that contain string values
+Check whether any element of a collection matches a regular expression. This rule works with: **array**, **slice**, and **map** that contain string values
 
 ```go
 {
   Field: "Images",
   Check: validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
 }
+```
+
+#### Min
+
+Compares the compliance between the prototype and value, the value must correspond to the specified prototype within the minimum threshold. The types that this rule works with are:
+**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**
+
+```go
+proto := 1
+
+{
+  Field: "Images",
+  Check: validator.Rule{"min", proto},
+}
+```
+
+When working with kinds of **array**, **slice**, and **map**, the minimum number (according to the specified prototype) of elements inside will check
+
+```go
+article := Article{
+  Images: []string{},
+}
+
+filter := validator.Filter{
+  {
+    Field: "Images",
+    Check: validator.Rule{"min", 1},
+  },
+}
+
+// []string{"images must contain at least 1 items"}
+hints := filter.Validate(article)
 ```
