@@ -50,6 +50,24 @@ func TestCheckField(t *testing.T) {
 			})
 		})
 
+		g.Describe(`validator.Range`, func() {
+			g.It("return empty hint", func() {
+				rules := reflect.ValueOf(Range{1, 25})
+				value := reflect.ValueOf(25)
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("", hint)
+			})
+
+			g.It("return filled hint", func() {
+				rules := reflect.ValueOf(Range{1, 25})
+				value := reflect.ValueOf(30)
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("must be in the range 1..25", hint)
+			})
+		})
+
 		g.Describe(`validator.Group`, func() {
 			g.It("return empty hint", func() {
 				rules := reflect.ValueOf(Group{

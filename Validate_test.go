@@ -905,6 +905,310 @@ func TestValidateEq(t *testing.T) {
 	})
 }
 
+// go test -v -run TestValidateRange .
+
+func TestValidateRange(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "range"`, func() {
+		type Article struct {
+			Title   string            `json:"title"`
+			Age     uint8             `json:"age"`
+			Images  []string          `json:"images"`
+			Phones  [4]string         `json:"phones"`
+			Options map[string]string `json:"options"`
+		}
+
+		g.Describe(`numeric`, func() {
+			g.It("success when the value matches the range", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Range{18, 21},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 18})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when given below-range value", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Range{18, 21},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 16})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+			})
+
+			g.It("failure when given above-range value", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Range{18, 21},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 31})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+			})
+		})
+
+		// ...
+
+		g.Describe(`string`, func() {
+			g.It("success when the length matches the range", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Range{4, 20},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: "all you need is love"})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length is below the range", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Range{25, 45},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: "all you need is love"})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("title must contain 25..45 characters")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Range{3, 18},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: "all you need is love"})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("title must contain 3..18 characters")
+			})
+		})
+
+		// ...
+
+		g.Describe(`array`, func() {
+			g.It("success when the length matches the range", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Range{1, 4},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Phones: [4]string{"t", "e", "s", "t"},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length is below the range", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Range{10, 80},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Phones: [4]string{"t", "e", "s", "t"},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("phones must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Range{1, 3},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Phones: [4]string{"t", "e", "s", "t"},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("phones must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.It("success when the length matches the range", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Range{1, 4},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Images: []string{"jpeg", "jpg", "png", "gif"},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length is below the range", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Range{10, 80},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Images: []string{"jpeg", "jpg", "png", "gif"},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("images must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Range{1, 3},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Images: []string{"jpeg", "jpg", "png", "gif"},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("images must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.It("success when the length matches the range", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Range{1, 4},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Options: map[string]string{
+						"jpeg": "image/jpeg",
+						"jpg":  "image/jpeg",
+						"png":  "image/png",
+						"gif":  "image/gif",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length is below the range", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Range{10, 80},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Options: map[string]string{
+						"jpeg": "image/jpeg",
+						"jpg":  "image/jpeg",
+						"png":  "image/png",
+						"gif":  "image/gif",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("options must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Range{1, 3},
+					},
+				}
+
+				hints := filter.Validate(Article{
+					Options: map[string]string{
+						"jpeg": "image/jpeg",
+						"jpg":  "image/jpeg",
+						"png":  "image/png",
+						"gif":  "image/gif",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("options must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("emptiness", func() {
+			g.It("failure if at least 1 element of the range is empty", func() {
+				protos := []Range{
+					{},
+					{nil, 15},
+					{15, nil},
+				}
+
+				for _, item := range protos {
+					filter := Filter{
+						{
+							Field: "Age",
+							Check: Range{item[0], item[1]},
+						},
+					}
+
+					hints := filter.Validate(Article{Age: 31})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("age " + MsgInvalidRule)
+				}
+			})
+
+			g.It("failure when given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Range{18, 21},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+			})
+		})
+	})
+}
+
 // go test -v -run TestValidateMatch .
 
 func TestValidateMatch(t *testing.T) {

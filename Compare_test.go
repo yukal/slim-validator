@@ -543,6 +543,200 @@ func TestCompareEq(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareRange .
+
+func TestCompareRange(t *testing.T) {
+	var (
+		strFilled   = "love"
+		arrFilled   = [4]string{"c", "o", "d", "e"}
+		sliceFilled = []string{"t", "e", "s", "t"}
+		mapFilled   = map[string]string{
+			"i": "val1",
+			"t": "val2",
+			"e": "val3",
+			"m": "val4",
+		}
+	)
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "range"`, func() {
+		g.Describe(`numeric`, func() {
+			g.It("success when the value matches the range", func() {
+				proto := reflect.ValueOf(Range{1, 25})
+				value := reflect.ValueOf(15)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when given below-range value", func() {
+				proto := reflect.ValueOf(Range{15, 25})
+				value := reflect.ValueOf(5)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must be in the range 15..25")
+			})
+
+			g.It("failure when given above-range value", func() {
+				proto := reflect.ValueOf(Range{15, 25})
+				value := reflect.ValueOf(55)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must be in the range 15..25")
+			})
+		})
+
+		// ...
+
+		g.Describe(`array`, func() {
+			g.It("success when the length matches the range", func() {
+				proto := reflect.ValueOf(Range{1, 4})
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is below the range", func() {
+				proto := reflect.ValueOf(Range{10, 80})
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				proto := reflect.ValueOf(Range{1, 3})
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.It("success when the length matches the range", func() {
+				proto := reflect.ValueOf(Range{1, 4})
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is below the range", func() {
+				proto := reflect.ValueOf(Range{10, 80})
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				proto := reflect.ValueOf(Range{1, 3})
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.It("success when the length matches the range", func() {
+				proto := reflect.ValueOf(Range{1, 4})
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is below the range", func() {
+				proto := reflect.ValueOf(Range{10, 80})
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 10..80 items")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				proto := reflect.ValueOf(Range{1, 3})
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 1..3 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`string`, func() {
+			g.It("success when the length matches the range", func() {
+				proto := reflect.ValueOf(Range{1, 4})
+				value := reflect.ValueOf(strFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is below the range", func() {
+				proto := reflect.ValueOf(Range{10, 80})
+				value := reflect.ValueOf(strFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 10..80 characters")
+			})
+
+			g.It("failure when the length is above the range", func() {
+				proto := reflect.ValueOf(Range{1, 3})
+				value := reflect.ValueOf(strFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal("must contain 1..3 characters")
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			g.It("failure if at least 1 element of the range is invalid", func() {
+				value := reflect.ValueOf(arrFilled)
+				protos := []Range{
+					{},
+					{nil, 4},
+					{4, nil},
+				}
+
+				for _, item := range protos {
+					proto := reflect.ValueOf(item)
+					result := compare("range", proto, value)
+
+					g.Assert(result).Equal(MsgInvalidRule)
+				}
+			})
+
+			g.It("failure when given invalid range", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf(strFilled)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal(MsgInvalidRule)
+			})
+
+			g.It("failure when given invalid value", func() {
+				proto := reflect.ValueOf(Range{1, 3})
+				value := reflect.ValueOf(nil)
+
+				result := compare("range", proto, value)
+				g.Assert(result).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
 // go test -v -run TestCompareMatch .
 
 func TestCompareMatch(t *testing.T) {
