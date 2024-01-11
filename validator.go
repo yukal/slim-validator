@@ -157,6 +157,11 @@ func compare(action string, proto, value reflect.Value) string {
 		if !IsEachMatch(proto.String(), value) {
 			return MsgNotValid
 		}
+
+	case "year":
+		if !IsYearEqual(proto.Interface(), value.Interface()) {
+			return fmt.Sprintf(MsgEq, proto.Interface())
+		}
 	}
 
 	return ""
