@@ -86,7 +86,7 @@ Check whether any element of a collection matches a regular expression. This rul
 #### Min
 
 Compares the compliance between the prototype and value, the value must correspond to the specified prototype within the minimum threshold. The types that this rule works with are:
-**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**
+**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
 
 ```go
 proto := 1
@@ -113,4 +113,19 @@ filter := validator.Filter{
 
 // []string{"images must contain at least 1 items"}
 hints := filter.Validate(article)
+```
+
+When working with **string** values, the minimum length (according to the specified prototype) of the string will be checked using the [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
+
+```go
+Article{
+  Title: string{"somebody to love"},
+}
+
+filter := validator.Filter{
+  {
+    Field: "Title",
+    Check: validator.Rule{"min", 1},
+  },
+}
 ```
