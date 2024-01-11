@@ -1,22 +1,36 @@
-<a name="v0.6.0"></a>
-## [v0.6.0](https://github.com/yukal/slim-validator/compare/e9cfce77ac2b142526144be7112a62bdbff18483...c6bbf40ac2e6e42a61f962f0339f2c47d5fdeddc) - 2024-01-11
+<a name="v0.9.0"></a>
+## [v0.9.0](https://github.com/yukal/slim-validator/compare/e9cfce77ac2b142526144be7112a62bdbff18483...a08098150df4149189ad564d4740c844d971ed47) - 2024-01-11
 
 ### New Features
 
 - **core:**  validate min ([6d5a0a0e](https://github.com/yukal/slim-validator/commit/6d5a0a0efa0e2fdb2800da6e7225f8a1c74e9b80))
 - **core:**  validate max ([0d0004ed](https://github.com/yukal/slim-validator/commit/0d0004ed0c54e6aca89586c7d6a3a744408991fc))
 - **core:**  validator.Group ([1f960087](https://github.com/yukal/slim-validator/commit/1f960087c88659dfd5f51e080e50cf3e4ef83aa7))
+- **core:**  validate eq ([06a38315](https://github.com/yukal/slim-validator/commit/06a38315da14aa1e770ad9f0c58dba007f9b0ecc))
+- **core:**  validate range ([0cbd4411](https://github.com/yukal/slim-validator/commit/0cbd441189fc23be12a0a751d1c030519c977054))
+- **core:**  validate year ([e5592037](https://github.com/yukal/slim-validator/commit/e559203799c0e04f44e7863b45d70a4266c3bc05))
 
 ### Tests
 
 - **core:**  validate min ([90fac12e](https://github.com/yukal/slim-validator/commit/90fac12eaa35206f60da6b7d4a2c4fc51519b50b))
 - **core:**  validate max ([a1e5057c](https://github.com/yukal/slim-validator/commit/a1e5057c68adc09f0833a9b7a7ed4d69c84152be))
 - **core:**  validator.Group ([6583a86f](https://github.com/yukal/slim-validator/commit/6583a86f77c02f8f9bdc4ccddc3d3ea55fc12fb0))
+- **core:**  validate eq ([779b8b95](https://github.com/yukal/slim-validator/commit/779b8b951d2588fa1d6ebd2db5825840877ded11))
+- **core:**  validate range ([5f2faa2b](https://github.com/yukal/slim-validator/commit/5f2faa2bcca2ea3822c27e76ee719c8653b73e87))
+- **core:**  validate year ([ea0ed671](https://github.com/yukal/slim-validator/commit/ea0ed67148bbc430c99539f57c98836e461a511a))
 
 ### Docs
 
 - **readme:**  add links ([ef80a9ff](https://github.com/yukal/slim-validator/commit/ef80a9ff5e190ccb9db7f99317fd97a36788e05a))
-- **readme:**  add description with examples ([8a9a6d34](https://github.com/yukal/slim-validator/commit/8a9a6d349113a624638675d572d3056c1b8340bf)) ([08826219](https://github.com/yukal/slim-validator/commit/08826219e08a5f2e1033d942635995a8ea8cec1f)) ([c6bbf40a](https://github.com/yukal/slim-validator/commit/c6bbf40ac2e6e42a61f962f0339f2c47d5fdeddc))
+- **readme:**  add description with examples
+  - min ([8a9a6d34](https://github.com/yukal/slim-validator/commit/8a9a6d349113a624638675d572d3056c1b8340bf)) ([08826219](https://github.com/yukal/slim-validator/commit/08826219e08a5f2e1033d942635995a8ea8cec1f))
+  - max ([c6bbf40a](https://github.com/yukal/slim-validator/commit/c6bbf40ac2e6e42a61f962f0339f2c47d5fdeddc))
+  - eq ([628c9c26](https://github.com/yukal/slim-validator/commit/628c9c26a96b103459af615e989b7ccc6a35971e))
+  - range  ([85d6e48a](https://github.com/yukal/slim-validator/commit/85d6e48a2c2a82f68961a118623833753bb41209))
+  - year ([a0809815](https://github.com/yukal/slim-validator/commit/a08098150df4149189ad564d4740c844d971ed47))
+
+### Chore
+- **changelog:**  add workflow ([16258ef8](https://github.com/yukal/slim-validator/commit/16258ef8edfa7a93287dfa59037c71abe77e40a1))
 
 ### Continuous Integration
 
