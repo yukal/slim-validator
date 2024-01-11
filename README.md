@@ -44,7 +44,7 @@ for _, hint := range hints {
 ## Validation Rules
 #### NON_ZERO
 
-Checks the passed value for [non-zero](https://golangbyexample.com/go-default-zero-value-all-types/).
+Checks the passed value for [non-zero](https://go.dev/ref/spec#The_zero_value) [ [1](https://pkg.go.dev/reflect#Value.IsZero) ] [ [2](https://golangbyexample.com/go-default-zero-value-all-types/) ].
 The types that this rule works with are:
 **bool**, **string**, **array**, **slice**, **map**, **chan**, **struct**, **func**, **interface**,
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**,
