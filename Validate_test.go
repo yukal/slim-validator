@@ -308,6 +308,302 @@ func TestValidateMin(t *testing.T) {
 	})
 }
 
+// go test -v -run TestValidateMax .
+
+func TestValidateMax(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "max"`, func() {
+		type Article struct {
+			Title   string         `json:"title"`
+			Age     uint8          `json:"age"`
+			Images  []string       `json:"images"`
+			Phones  [4]string      `json:"phones"`
+			Options map[int]string `json:"options"`
+		}
+
+		g.Describe("numeric", func() {
+			g.It("success when the value is less than the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Rule{"max", 21},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 18})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Rule{"max", 21},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 21})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Age",
+						Check: Rule{"max", 12},
+					},
+				}
+
+				hints := filter.Validate(Article{Age: 21})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("age must be up to 12")
+			})
+		})
+
+		// ...
+
+		g.Describe("string", func() {
+			strFilled := "all you need is love"
+
+			g.It("success when the length is less than the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Rule{"max", 30},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: strFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the length reaches the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Rule{"max", 20},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: strFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length exceeds the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Title",
+						Check: Rule{"max", 10},
+					},
+				}
+
+				hints := filter.Validate(Article{Title: strFilled})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("title must contain up to 10 characters")
+			})
+		})
+
+		// ...
+
+		g.Describe("array", func() {
+			arrFilled := [4]string{"c", "o", "d", "e"}
+
+			g.It("success when the length is less than the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Rule{"max", 8},
+					},
+				}
+
+				hints := filter.Validate(Article{Phones: arrFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the length reaches the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Rule{"max", 4},
+					},
+				}
+
+				hints := filter.Validate(Article{Phones: arrFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length exceeds the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Phones",
+						Check: Rule{"max", 2},
+					},
+				}
+
+				hints := filter.Validate(Article{Phones: arrFilled})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("phones must contain up to 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("slice", func() {
+			sliceFilled := []string{"t", "e", "s", "t"}
+
+			g.It("success when the length is less than the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Rule{"max", 8},
+					},
+				}
+
+				hints := filter.Validate(Article{Images: sliceFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the length reaches the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Rule{"max", 4},
+					},
+				}
+
+				hints := filter.Validate(Article{Images: sliceFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length exceeds the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Images",
+						Check: Rule{"max", 2},
+					},
+				}
+
+				hints := filter.Validate(Article{Images: sliceFilled})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("images must contain up to 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("map", func() {
+			mapFilled := map[int]string{
+				1: "We all live in a yellow submarine",
+				2: "While My Guitar Gently Weeps",
+				3: "All you need is love",
+				4: "Let it be",
+			}
+
+			g.It("success when the length is less than the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Rule{"max", 8},
+					},
+				}
+
+				hints := filter.Validate(Article{Options: mapFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the length reaches the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Rule{"max", 4},
+					},
+				}
+
+				hints := filter.Validate(Article{Options: mapFilled})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the length exceeds the max threshold", func() {
+				filter := Filter{
+					{
+						Field: "Options",
+						Check: Rule{"max", 2},
+					},
+				}
+
+				hints := filter.Validate(Article{Options: mapFilled})
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("options must contain up to 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe(`emptiness`, func() {
+			fieldsToCheck := []string{"Age", "Title", "Images", "Options"}
+			article := Article{
+				Age:    21,
+				Title:  "All you need is love",
+				Phones: [4]string{"0001234567"},
+				Images: []string{"img1", "img2"},
+				Options: map[int]string{
+					1: "one",
+					2: "two",
+				},
+			}
+
+			g.It("success when given a zero proto and empty value", func() {
+				for _, fieldName := range fieldsToCheck {
+					filter := Filter{
+						{
+							Field: fieldName,
+							Check: Rule{"max", 0},
+						},
+					}
+
+					hints := filter.Validate(Article{})
+					g.Assert(len(hints)).Equal(0, hints)
+				}
+			})
+
+			g.It("failure when missing rule proto", func() {
+				for _, fieldName := range fieldsToCheck {
+					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
+
+					filter := Filter{
+						{
+							Field: fieldName,
+							Check: Rule{"max"},
+						},
+					}
+
+					hints := filter.Validate(article)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal(expectMsg)
+				}
+			})
+
+			g.It("failure when given an empty rule", func() {
+				for _, fieldName := range fieldsToCheck {
+					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
+
+					filter := Filter{
+						{
+							Field: fieldName,
+							Check: Rule{},
+						},
+					}
+
+					hints := filter.Validate(article)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal(expectMsg)
+				}
+			})
+		})
+	})
+}
+
 // go test -v -run TestValidateMatch .
 
 func TestValidateMatch(t *testing.T) {
