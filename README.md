@@ -1,15 +1,18 @@
 # slim-validator
 A simple validation package for Go
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/yukal/slim-validator.svg)](https://pkg.go.dev/github.com/yukal/slim-validator)
+
 ## Usage
 
 ```go
 type Article struct {
-  Id     uint     `json:"id"`
-  Sex    uint8    `json:"sex"`
-  Title  string   `json:"title"`
-  Phone  string   `json:"phone"`
-  Images []string `json:"images"`
+  Id     uint      `json:"id"`
+  Sex    uint8     `json:"sex"`
+  Title  string    `json:"title"`
+  Phone  string    `json:"phone"`
+  Images []string  `json:"images"`
+  Date   time.Time `json:"date"`
 }
 
 filter := validator.Filter{
@@ -43,6 +46,11 @@ filter := validator.Filter{
       validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
     },
   },
+  {
+    Field: "Date",
+    // date must be exactly 2024
+    Check: validator.Rule{"year", 2024},
+  },
 }
 
 article := Article{
@@ -54,6 +62,7 @@ article := Article{
     "https://img.it/5e8aa4647a6fd1545346e4375fedf14b.jpeg",
     "https://img.it/fe14b5e8aa46475346e4375a6fd15df4.jpg",
   },
+  Date: time.Now(),
 }
 
 hints := filter.Validate(article)
@@ -235,5 +244,17 @@ When working with **string** values, the validator will check whether the length
 {
   Field: "Title",
   Check: validator.Range{1, 200},
+}
+```
+
+#### Year
+
+Compares the compliance between the prototype and the value, the value must match the specified year. This rule only works with **[time.Time](https://pkg.go.dev/time)**
+
+```go
+// date must be exactly 2024
+{
+  Field: "Date",
+  Check: validator.Rule{"year", 2024},
 }
 ```
