@@ -366,6 +366,183 @@ func TestCompareMax(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareEq .
+
+func TestCompareEq(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "eq" (equal)`, func() {
+		g.Describe("numeric", func() {
+			g.It("success when the value equals a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(4)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the value is less than a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(-4)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must be exactly 4")
+			})
+
+			g.It("failure when the value exceeds a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(8)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must be exactly 4")
+			})
+		})
+
+		// ...
+
+		g.Describe("string", func() {
+			g.It("success when the length equals a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf("love")
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is less than a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf("")
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 4 characters")
+			})
+
+			g.It("failure when the length exceeds a threshold", func() {
+				proto := reflect.ValueOf(2)
+				value := reflect.ValueOf("love")
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 2 characters")
+			})
+		})
+
+		// ...
+
+		g.Describe("array", func() {
+			arrFilled := [4]string{"c", "o", "d", "e"}
+
+			g.It("success when the length equals a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is less than a threshold", func() {
+				proto := reflect.ValueOf(8)
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 8 items")
+			})
+
+			g.It("failure when the value exceeds a threshold", func() {
+				proto := reflect.ValueOf(2)
+				value := reflect.ValueOf(arrFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("slice", func() {
+			sliceFilled := []string{"t", "e", "s", "t"}
+
+			g.It("success when the length equals a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is less than a threshold", func() {
+				proto := reflect.ValueOf(8)
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 8 items")
+			})
+
+			g.It("failure when the value exceeds a threshold", func() {
+				proto := reflect.ValueOf(2)
+				value := reflect.ValueOf(sliceFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("map", func() {
+			mapFilled := map[int]string{
+				1: "val1",
+				2: "val2",
+				3: "val3",
+				4: "val4",
+			}
+
+			g.It("success when the length equals a threshold", func() {
+				proto := reflect.ValueOf(4)
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("")
+			})
+
+			g.It("failure when the length is less than a threshold", func() {
+				proto := reflect.ValueOf(8)
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 8 items")
+			})
+
+			g.It("failure when the value exceeds a threshold", func() {
+				proto := reflect.ValueOf(2)
+				value := reflect.ValueOf(mapFilled)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal("must contain exactly 2 items")
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			g.It("failure when given an invalid threshold", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf(10)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal(MsgInvalidRule)
+			})
+
+			g.It("failure when given an invalid value", func() {
+				proto := reflect.ValueOf(10)
+				value := reflect.ValueOf(nil)
+
+				result := compare("eq", proto, value)
+				g.Assert(result).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
 // go test -v -run TestCompareMatch .
 
 func TestCompareMatch(t *testing.T) {
