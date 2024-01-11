@@ -12,10 +12,13 @@ const (
 
 	MsgMinStrLen      = "must contain at least %d characters"
 	MsgMaxStrLen      = "must contain up to %d characters"
+	MsgEqStrLen       = "must contain exactly %d characters"
 	MsgMinSetLen      = "must contain at least %d items"
 	MsgMaxSetLen      = "must contain up to %d items"
+	MsgEqSetLen       = "must contain exactly %d items"
 	MsgMin            = "must be at least %d"
 	MsgMax            = "must be up to %d"
+	MsgEq             = "must be exactly %d"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
 	MsgInvalidValue   = "has invalid value"
@@ -128,6 +131,9 @@ func compare(action string, proto, value reflect.Value) string {
 	case "max":
 		return filterMax(proto, value)
 
+	case "eq":
+		return filterEq(proto, value)
+
 	case "match":
 		if !IsMatch(proto, value) {
 			return MsgNotValid
@@ -186,6 +192,29 @@ func filterMax(proto, value reflect.Value) string {
 	}
 
 	if !IsMax(proto.Interface(), value.Interface()) {
+		return hint
+	}
+
+	return ""
+}
+
+func filterEq(proto, value reflect.Value) string {
+	hint := ""
+
+	switch value.Kind() {
+	case reflect.String:
+		value = reflect.ValueOf(utf8.RuneCountInString(value.String()))
+		hint = fmt.Sprintf(MsgEqStrLen, proto.Interface())
+
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
+		value = reflect.ValueOf(value.Len())
+		hint = fmt.Sprintf(MsgEqSetLen, proto.Interface())
+
+	default:
+		hint = fmt.Sprintf(MsgEq, proto.Interface())
+	}
+
+	if !IsEqual(proto.Interface(), value.Interface()) {
 		return hint
 	}
 
