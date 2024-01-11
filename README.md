@@ -6,6 +6,7 @@ A simple validation package for Go
 ```go
 type Article struct {
   Id     uint     `json:"id"`
+  Sex    uint8    `json:"sex"`
   Title  string   `json:"title"`
   Phone  string   `json:"phone"`
   Images []string `json:"images"`
@@ -17,9 +18,14 @@ filter := validator.Filter{
     Check: validator.NON_ZERO,
   },
   {
+    Field: "Sex",
+    // sex must be exactly 2
+    Check: validator.Rule{"eq", 2},
+  },
+  {
     Field: "Title",
-    // title must contain up to 15 characters
-    Check: validator.Rule{"max", 15},
+    // title must contain up to 64 characters
+    Check: validator.Rule{"max", 64},
   },
   {
     Field: "Phone",
@@ -28,8 +34,8 @@ filter := validator.Filter{
   {
     Field: "Images",
     Check: validator.Group{
-      // images must contain at least 1 items
-      validator.Rule{"min", 1},
+      // images must contain at least 2 items
+      validator.Rule{"min", 2},
 
       // images must contain up to 3 items
       validator.Rule{"max", 3},
@@ -41,6 +47,8 @@ filter := validator.Filter{
 
 article := Article{
   Id:    12,
+  Sex:   1,
+  Title: "We all live in a yellow submarine",
   Phone: "+380001234567",
   Images: []string{
     "https://img.it/5e8aa4647a6fd1545346e4375fedf14b.jpeg",
@@ -102,8 +110,9 @@ Compares the compliance between the prototype and value, the value must correspo
 ```go
 proto := 1
 
+// id must be at least 1
 {
-  Field: "Images",
+  Field: "Id",
   Check: validator.Rule{"min", proto},
 }
 ```
@@ -111,33 +120,20 @@ proto := 1
 When working with kinds of **array**, **slice**, and **map**, the minimum number (according to the specified prototype) of elements inside will check
 
 ```go
-article := Article{
-  Images: []string{},
+// images must contain at least 1 items
+{
+  Field: "Images",
+  Check: validator.Rule{"min", 1},
 }
-
-filter := validator.Filter{
-  {
-    Field: "Images",
-    Check: validator.Rule{"min", 1},
-  },
-}
-
-// []string{"images must contain at least 1 items"}
-hints := filter.Validate(article)
 ```
 
 When working with **string** values, the minimum length (according to the specified prototype) of the string will be checked using the [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
 
 ```go
-Article{
-  Title: string{"somebody to love"},
-}
-
-filter := validator.Filter{
-  {
-    Field: "Title",
-    Check: validator.Rule{"min", 1},
-  },
+// title must contain at least 16 characters
+{
+  Field: "Title",
+  Check: validator.Rule{"min", 16},
 }
 ```
 
@@ -147,10 +143,11 @@ Compares the compliance between the prototype and value, the value must correspo
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
 
 ```go
-proto := 10
+proto := 255
 
+// id must be up to 255
 {
-  Field: "Images",
+  Field: "Id",
   Check: validator.Rule{"max", proto},
 }
 ```
@@ -158,31 +155,52 @@ proto := 10
 When working with kinds of **array**, **slice**, and **map**, the maximum number (according to the specified prototype) of elements inside will check
 
 ```go
-article := Article{
-  Images: []string{"img1", "img2", "img3", "img4"},
-}
-
-filter := validator.Filter{
-  {
-    Field: "Images",
-    // images must contain up to 3 items
-    Check: validator.Rule{"max", 3},
-  },
+// images must contain up to 3 items
+{
+  Field: "Images",
+  Check: validator.Rule{"max", 3},
 }
 ```
 
 When working with **string** values, the maximum length (according to the specified prototype) of the string will be checked using the [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
 
 ```go
-Article{
-  Title: string{"Somebody to love"},
+// title must contain up to 15 characters
+{
+  Field: "Title",
+  Check: validator.Rule{"max", 15},
 }
+```
 
-filter := validator.Filter{
-  {
-    Field: "Title",
-    // title must contain up to 15 characters
-    Check: validator.Rule{"max", 15},
-  },
+#### Equal
+
+Compares the compliance between the prototype and value, the value must exactly equal the specified prototype. The types that this rule works with are:
+**int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
+
+```go
+// sex must be exactly 2
+{
+  Field: "Sex",
+  Check: validator.Rule{"eq", 1},
+}
+```
+
+When working with kinds of **array**, **slice**, and **map**, the validator will check if the capacity is equal to the specified number
+
+```go
+// images must contain exactly 2 items
+{
+  Field: "Images",
+  Check: validator.Rule{"eq", 2},
+}
+```
+
+When working with **string** values, the validator will check if the length is equal to the specified number. It uses [utf8.RuneCountInString](https://pkg.go.dev/unicode/utf8#RuneCountInString)
+
+```go
+// title must contain exactly 15 characters
+{
+  Field: "Title",
+  Check: validator.Rule{"eq", 15},
 }
 ```
