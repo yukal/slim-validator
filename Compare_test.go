@@ -9,6 +9,7 @@ import (
 	. "github.com/franela/goblin"
 )
 
+// go clean -testcache
 // go test -v -cover .
 // go test -v -cover -run TestCompare .
 
@@ -807,9 +808,9 @@ func TestCompareMatch(t *testing.T) {
 	})
 }
 
-// go test -v -run TestCompareEachMatch .
+// go test -v -run TestCompareEachMatchDeprecated .
 
-func TestCompareEachMatch(t *testing.T) {
+func TestCompareEachMatchDeprecated(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "eachMatch"`, func() {
@@ -968,6 +969,175 @@ func TestCompareEachMatch(t *testing.T) {
 				value := reflect.ValueOf(nil)
 
 				g.Assert(compare("eachMatch", proto, value)).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
+// go test -v -run TestCompareEachMatch .
+
+func TestCompareEachMatch(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "each:match"`, func() {
+		g.Describe(`array`, func() {
+			g.It("success when values match the mask", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([2]string{
+					"b0fb0c19711bcf3b73f41c909f66bded",
+					"f41c909f66bdedb0fb0c19711bcf3b73",
+				})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("success when given an empty slice", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([0]string{})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([2]string{
+					"b0fb0c19711bcf3b73f41c909f66bded",
+					"zzz",
+				})
+
+				errorMsg := "item[1] " + MsgNotValid
+				g.Assert(compare("each:match", proto, value)).Equal(errorMsg)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				proto := reflect.ValueOf(``)
+				value := reflect.ValueOf([1]string{"str"})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It("failure when given invalid mask", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf([1]string{"str"})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given invalid value`, func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(nil)
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidValue)
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.It("success when values match the mask", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([]string{
+					"b0fb0c19711bcf3b73f41c909f66bded",
+					"f41c909f66bdedb0fb0c19711bcf3b73",
+				})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("success when given an empty slice", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([]string{})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf([]string{
+					"b0fb0c19711bcf3b73f41c909f66bded",
+					"zzz",
+				})
+
+				errorMsg := "item[1] " + MsgNotValid
+				g.Assert(compare("each:match", proto, value)).Equal(errorMsg)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				proto := reflect.ValueOf(``)
+				value := reflect.ValueOf([]string{"str"})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It("failure when given invalid mask", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf([]string{"b0fb0c19711bcf3b73f41c909f66bded"})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given invalid value`, func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(nil)
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidValue)
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.It("success when values match the mask", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(map[int]string{
+					1: "b0fb0c19711bcf3b73f41c909f66bded",
+					2: "f41c909f66bdedb0fb0c19711bcf3b73",
+				})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("success when given an empty slice", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(map[int]string{})
+
+				g.Assert(compare("each:match", proto, value)).Equal("")
+			})
+
+			g.It("failure when at least 1 value does not match", func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(map[int]string{
+					1: "b0fb0c19711bcf3b73f41c909f66bded",
+					2: "zzz",
+				})
+
+				errorMsg := "item[2] " + MsgNotValid
+				g.Assert(compare("each:match", proto, value)).Equal(errorMsg)
+			})
+
+			g.It("failure when given an empty mask", func() {
+				proto := reflect.ValueOf(``)
+				value := reflect.ValueOf(map[int]string{
+					1: "str",
+				})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It("failure when given invalid mask", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf(map[int]string{
+					1: "b0fb0c19711bcf3b73f41c909f66bded",
+				})
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given invalid value`, func() {
+				proto := reflect.ValueOf(`(?i)^[0-9a-f]{32}$`)
+				value := reflect.ValueOf(nil)
+
+				g.Assert(compare("each:match", proto, value)).Equal(MsgInvalidValue)
 			})
 		})
 	})
