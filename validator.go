@@ -24,6 +24,7 @@ const (
 	MsgRange          = "must be in the range %d..%d"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
+	MsgUnsupportType  = "has unsupported type to validate"
 	MsgInvalidValue   = "has invalid value"
 	MsgInvalidRule    = "has invalid rule"
 	MsgInvalidBodyVal = "invalid body value"
@@ -149,6 +150,11 @@ func compare(action string, proto, value reflect.Value) string {
 			return MsgNotValid
 		}
 
+	// modifiers
+	case "each:range", "each:min", "each:max", "each:eq", "each:match":
+		return filterEach(action[5:], proto, value)
+
+	// deprecated
 	case "eachMatch":
 		if (proto.Kind() != reflect.String) || (proto.Len() == 0) {
 			return MsgInvalidRule
@@ -267,6 +273,39 @@ func filterEq(proto, value reflect.Value) string {
 	}
 
 	return ""
+}
+
+func filterEach(action string, proto, value reflect.Value) string {
+	switch action {
+	case "match":
+		if (proto.Kind() != reflect.String) || (proto.Len() == 0) {
+			return MsgInvalidRule
+		}
+	}
+
+	switch value.Kind() {
+	case reflect.Array, reflect.Slice:
+		for n := 0; n < value.Len(); n++ {
+			if hint := compare(action, proto, value.Index(n)); hint != "" {
+				return fmt.Sprintf("item[%v] "+hint, n)
+			}
+		}
+
+		return ""
+
+	case reflect.Map:
+		iter := value.MapRange()
+
+		for iter.Next() {
+			if hint := compare(action, proto, iter.Value()); hint != "" {
+				return fmt.Sprintf("item[%v] "+hint, iter.Key())
+			}
+		}
+
+		return ""
+	}
+
+	return MsgUnsupportType
 }
 
 func IsMatch(reg, value reflect.Value) (flag bool) {
