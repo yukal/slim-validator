@@ -47,6 +47,11 @@ type FilterItem struct {
 type Filter []FilterItem
 
 // data should be a type of struct{ ... }
+func (filter Filter) IsValid(data any) bool {
+	return len(filter.Validate(data)) == 0
+}
+
+// data should be a type of struct{ ... }
 func (filter Filter) Validate(data any) []string {
 	refValData := reflect.Indirect(reflect.ValueOf(data))
 	refTypData := refValData.Type()
