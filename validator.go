@@ -118,6 +118,12 @@ func checkField(rules, value reflect.Value) string {
 		proto := reflect.ValueOf(nil)
 
 		return compare(action, proto, value)
+
+	case "interface {}":
+		unpackedRules := reflect.Indirect(reflect.ValueOf(rules.Interface()))
+		if hint := checkField(unpackedRules, value); hint != "" {
+			return hint
+		}
 	}
 
 	return ""
