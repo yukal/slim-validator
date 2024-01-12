@@ -1,3 +1,29 @@
+<a name="v0.12.0"></a>
+## [v0.12.0](https://github.com/yukal/slim-validator/compare/a48cbfa6d9d8f0d3453135c796f9fa1b57113567...3e0681f5dc107ac4cb6eee0b361b8889e649ed11) (2024-01-12)
+
+### New Features
+
+- **core:**  add the modifier "each" ([c62d0b59](https://github.com/yukal/slim-validator/commit/c62d0b5970314081344028c1b076185d7c37ce57))
+- **core:**  add the modifier "fields" ([54903f64](https://github.com/yukal/slim-validator/commit/54903f647c5ee41ba8d767fa01c957e6bcc62c9a))
+- **core:**  implement isValid method ([638e303a](https://github.com/yukal/slim-validator/commit/638e303a58cbd5f845c85ee3ac10936518a62043))
+
+### Refactors
+
+- **compare:**  invalid rule ([3684f9e8](https://github.com/yukal/slim-validator/commit/3684f9e83867b5304ebb6b9b070cca4d0d9b3777))
+- **range:**  support numeric types ([f01560b8](https://github.com/yukal/slim-validator/commit/f01560b8ffbd780dc7de4ae862acae3bf754f293))
+- **check-field:**  recursively unpack interface value ([65e7c931](https://github.com/yukal/slim-validator/commit/65e7c931530fc5e9103fe00f7d9431ed7bdfeff6))
+
+### Tests
+
+- **core:**  modifier each-match ([dda43810](https://github.com/yukal/slim-validator/commit/dda4381050c49a85c68fc49b2e96c7ca66f9ba59))
+- **core:**  modifier each-min ([8c9b4507](https://github.com/yukal/slim-validator/commit/8c9b450760aa0cb41b9b4f2f9e8951c7f0c26c57))
+- **core:**  modifier each-max ([5bfe9c84](https://github.com/yukal/slim-validator/commit/5bfe9c84566e7fb403677bfbc87558cff65c80ed))
+- **core:**  modifier each-eq ([99255020](https://github.com/yukal/slim-validator/commit/992550207d7d17ea3f92189465fafadf72bfd26f))
+- **core:**  modifier each-range ([833143f0](https://github.com/yukal/slim-validator/commit/833143f00e1cc9f19079cf9addcefab2641afaee))
+- **core:**  modifier fields ([b194f206](https://github.com/yukal/slim-validator/commit/b194f206d8a9c5bc5758ea269576eb3360ee186a))
+- **core:**  isValid ([3e0681f5](https://github.com/yukal/slim-validator/commit/3e0681f5dc107ac4cb6eee0b361b8889e649ed11))
+
+
 <a name="v0.9.0"></a>
 ## [v0.9.0](https://github.com/yukal/slim-validator/compare/e9cfce77ac2b142526144be7112a62bdbff18483...a08098150df4149189ad564d4740c844d971ed47) - 2024-01-11
 
