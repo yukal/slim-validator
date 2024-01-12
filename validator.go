@@ -168,6 +168,9 @@ func compare(action string, proto, value reflect.Value) string {
 		if !IsYearEqual(proto.Interface(), value.Interface()) {
 			return fmt.Sprintf(MsgEq, proto.Interface())
 		}
+
+	default:
+		return MsgInvalidRule
 	}
 
 	return ""
