@@ -974,6 +974,858 @@ func TestCompareEachMatchDeprecated(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareEachMin .
+
+func TestCompareEachMin(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "each:min"`, func() {
+		g.Describe(`array`, func() {
+			g.Describe(`array:numeric`, func() {
+				g.It("success when the element value exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([2]int{15, 25})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element value reaches the min threshold", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([2]int{15, 25})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([0]int{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([2]int{5, 15})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must be at least 10")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:string`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([2]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(20)
+					value := reflect.ValueOf([2]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([0]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(18)
+					value := reflect.ValueOf([2]string{
+						"No pain no gain",
+						"Fight fire with fire",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must contain at least 18 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:array`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([0][0]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 element length is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([2][3]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+							"Let it be",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:slice`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([0][]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+							"Lady Madonna",
+							"Let it be",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[1] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:map`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([0]map[int]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+							3: "Lady Madonna",
+							4: "Let it be",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[1] must contain at least 4 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.Describe(`slice:numeric`, func() {
+				g.It("success when the element value exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]int{15, 25})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element value reaches the min threshold", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([]int{15, 25})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]int{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]int{5, 15})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must be at least 10")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:string`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(20)
+					value := reflect.ValueOf([]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(18)
+					value := reflect.ValueOf([]string{
+						"No pain no gain",
+						"Fight fire with fire",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must contain at least 18 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:array`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([][2]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 element length is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[0] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:slice`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([][]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+							"Lady Madonna",
+							"Let it be",
+						},
+						{
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[1] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:map`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf([]map[int]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+							3: "Lady Madonna",
+							4: "Let it be",
+						},
+						{
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[1] must contain at least 4 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.Describe(`map:numeric`, func() {
+				g.It("success when the element value exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]int{
+						"first":  15,
+						"second": 25,
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element value reaches the min threshold", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf(map[string]int{
+						"first":  15,
+						"second": 25,
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]int{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]int{
+						"first":  5,
+						"second": 15,
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[first] must be at least 10")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:string`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]string{
+						"first":  "We all live in a yellow submarine",
+						"second": "All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(20)
+					value := reflect.ValueOf(map[string]string{
+						"first":  "We all live in a yellow submarine",
+						"second": "All you need is love",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(18)
+					value := reflect.ValueOf(map[string]string{
+						"first":  "No pain no gain",
+						"second": "Fight fire with fire",
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[first] must contain at least 18 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:array`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf(map[string][2]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][2]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf(map[string][2]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 element length is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf(map[string][2]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:slice`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf(map[string][]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+							"Lady Madonna",
+							"Let it be",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[Scorpions] must contain at least 4 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:map`, func() {
+				g.It("success when the element length exceeds the min threshold", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when the element length reaches the min threshold", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(3)
+					value := reflect.ValueOf(map[string]map[int]string{})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when at least 1 value is less than the min threshold", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+							3: "Lady Madonna",
+							4: "Let it be",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+							2: "Here in my heart",
+						},
+					})
+
+					result := compare("each:min", proto, value)
+					g.Assert(result).Equal("item[Scorpions] must contain at least 4 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			g.It("failure when given an invalid threshold", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf("Here In My Heart")
+
+				result := compare("each:min", proto, value)
+				g.Assert(result).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given an invalid value`, func() {
+				proto := reflect.ValueOf(10)
+				value := reflect.ValueOf(nil)
+
+				result := compare("each:min", proto, value)
+				g.Assert(result).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
 // go test -v -run TestCompareEachMatch .
 
 func TestCompareEachMatch(t *testing.T) {
