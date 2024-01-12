@@ -81,6 +81,10 @@ func (filter Filter) Validate(data any) []string {
 
 			continue
 		}
+
+		if hint := checkOthers(rules, successFields); hint != "" {
+			hints = append(hints, hint)
+		}
 	}
 
 	return hints
@@ -114,6 +118,34 @@ func checkField(rules, value reflect.Value) string {
 		proto := reflect.ValueOf(nil)
 
 		return compare(action, proto, value)
+	}
+
+	return ""
+}
+
+func checkOthers(rules reflect.Value, successFields int) string {
+	var (
+		action = ""
+		value  = reflect.ValueOf(nil)
+		proto  reflect.Value
+	)
+
+	switch rules.Type().String() {
+	case "validator.Rule":
+		action = rules.Index(0).Elem().String()
+		proto = rules.Index(1).Elem()
+
+		if action[0:6] == "fields" {
+			action = action[7:]
+			value = reflect.ValueOf(successFields)
+		}
+
+		if hint := compare(action, proto, value); hint != "" {
+			return MsgInvalidBodyVal
+		}
+
+	default:
+		return MsgInvalidRule
 	}
 
 	return ""
