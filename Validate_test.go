@@ -7161,3 +7161,84 @@ func TestValidateNonZero(t *testing.T) {
 		}
 	})
 }
+
+// go test -v -run TestValidateFieldsMod .
+
+func TestValidateFieldsMod(t *testing.T) {
+	type Article struct {
+		Id        uint16 `json:"id"`
+		Status    uint8  `json:"status"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Modifier "fields"`, func() {
+		g.It("success when passing required fields", func() {
+			filter := Filter{
+				{
+					Field: "Id",
+					Check: NON_ZERO,
+				},
+				{
+					Field: "Status",
+					Check: Range{1, 5},
+				},
+				{
+					Field: "FirstName",
+					Check: Range{3, 15},
+				},
+				{
+					Field: "LastName",
+					Check: Range{3, 15},
+				},
+				{
+					Check: Rule{"fields:min", 4},
+				},
+			}
+
+			hints := filter.Validate(Article{
+				Id:        10,
+				Status:    5,
+				FirstName: "John",
+				LastName:  "Doe",
+			})
+
+			g.Assert(len(hints)).Equal(0, hints)
+		})
+
+		g.It("failure when missing required fields", func() {
+			filter := Filter{
+				{
+					Field: "Id",
+					Check: NON_ZERO,
+				},
+				{
+					Field: "Status",
+					Check: Range{1, 5},
+				},
+				{
+					Field: "FirstName",
+					Check: Range{3, 15},
+				},
+				{
+					Field: "LastName",
+					Check: Range{3, 15},
+				},
+				{
+					Check: Rule{"fields:min", 4},
+				},
+			}
+
+			hints := filter.Validate(Article{})
+
+			g.Assert(len(hints)).Equal(5, hints)
+			g.Assert(hints[0]).Equal("id is empty")
+			g.Assert(hints[1]).Equal("status must be in the range 1..5")
+			g.Assert(hints[2]).Equal("firstName must contain 3..15 characters")
+			g.Assert(hints[3]).Equal("lastName must contain 3..15 characters")
+			g.Assert(hints[4]).Equal("invalid body value")
+		})
+	})
+}
