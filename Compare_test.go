@@ -3479,6 +3479,505 @@ func TestCompareEachEq(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareEachRange .
+
+func TestCompareEachRange(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "each:range"`, func() {
+		g.Describe(`array`, func() {
+			g.Describe(`array:numeric`, func() {
+				value := reflect.ValueOf([2]int{10, 25})
+
+				g.It("success when the element value matches the range", func() {
+					proto := reflect.ValueOf(Range{10, 25})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					proto := reflect.ValueOf(Range{35, 45})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					proto := reflect.ValueOf(Range{2, 8})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must be in the range 2..8")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:string`, func() {
+				value := reflect.ValueOf([4]string{
+					"We all live in a yellow submarine",
+					"All you need is love",
+					"Here in my heart",
+					"No pain no gain",
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{15, 33})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{35, 65})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 35..65 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{8, 14})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 8..14 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:array`, func() {
+				value := reflect.ValueOf([2][4]string{
+					{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+					{
+						"When the Smoke Is Going Down",
+						"No pain no gain",
+						"Born To Touch Your Feelings",
+						"Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:slice`, func() {
+				value := reflect.ValueOf([2][]string{
+					{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+					{
+						"When the Smoke Is Going Down",
+						"No pain no gain",
+						"Born To Touch Your Feelings",
+						"Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:map`, func() {
+				value := reflect.ValueOf([2]map[int]string{
+					{
+						1: "We all live in a yellow submarine",
+						2: "All you need is love",
+					},
+					{
+						1: "No pain no gain",
+						2: "Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 8})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..8 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{0, 1})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 0..1 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.Describe(`slice:numeric`, func() {
+				value := reflect.ValueOf([]int{10, 25})
+
+				g.It("success when the element value matches the range", func() {
+					proto := reflect.ValueOf(Range{10, 25})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					proto := reflect.ValueOf(Range{35, 45})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					proto := reflect.ValueOf(Range{2, 8})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must be in the range 2..8")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:string`, func() {
+				value := reflect.ValueOf([]string{
+					"We all live in a yellow submarine",
+					"All you need is love",
+					"Here in my heart",
+					"No pain no gain",
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{15, 33})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{35, 65})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 35..65 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{8, 14})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 8..14 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:array`, func() {
+				value := reflect.ValueOf([][4]string{
+					{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+					{
+						"When the Smoke Is Going Down",
+						"No pain no gain",
+						"Born To Touch Your Feelings",
+						"Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:slice`, func() {
+				value := reflect.ValueOf([][]string{
+					{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+					{
+						"When the Smoke Is Going Down",
+						"No pain no gain",
+						"Born To Touch Your Feelings",
+						"Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:map`, func() {
+				value := reflect.ValueOf([]map[int]string{
+					{
+						1: "We all live in a yellow submarine",
+						2: "All you need is love",
+					},
+					{
+						1: "No pain no gain",
+						2: "Here in my heart",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 8})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 5..8 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{0, 1})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[0] must contain 0..1 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.Describe(`map:numeric`, func() {
+				value := reflect.ValueOf(map[string]int{
+					"key1": 10,
+					"key2": 25,
+				})
+
+				g.It("success when the element value matches the range", func() {
+					proto := reflect.ValueOf(Range{10, 25})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					proto := reflect.ValueOf(Range{25, 45})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[key1] must be in the range 25..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[key2] must be in the range 5..10")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:string`, func() {
+				value := reflect.ValueOf(map[string]string{
+					"first":  "We all live in a yellow submarine",
+					"second": "All you need is love",
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{20, 33})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{33, 43})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[second] must contain 33..43 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{10, 20})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[first] must contain 10..20 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:array`, func() {
+				value := reflect.ValueOf(map[string][4]string{
+					"Beatles": {
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:slice`, func() {
+				value := reflect.ValueOf(map[string][]string{
+					"Beatles": {
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"Lady Madonna",
+						"Let it be",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:map`, func() {
+				value := reflect.ValueOf(map[string]map[int]string{
+					"Beatles": {
+						1: "We all live in a yellow submarine",
+						2: "All you need is love",
+						3: "Lady Madonna",
+						4: "Let it be",
+					},
+				})
+
+				g.It("success when the element length matches the range", func() {
+					proto := reflect.ValueOf(Range{2, 4})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					proto := reflect.ValueOf(Range{5, 10})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					proto := reflect.ValueOf(Range{1, 2})
+					result := compare("each:range", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain 1..2 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			g.It("failure when given an invalid threshold", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf("Here In My Heart")
+
+				result := compare("each:range", proto, value)
+				g.Assert(result).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given an invalid value`, func() {
+				proto := reflect.ValueOf(10)
+				value := reflect.ValueOf(nil)
+
+				result := compare("each:range", proto, value)
+				g.Assert(result).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
 // go test -v -run TestCompareEachMatch .
 
 func TestCompareEachMatch(t *testing.T) {

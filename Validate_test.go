@@ -5624,6 +5624,986 @@ func TestValidateEachEq(t *testing.T) {
 	})
 }
 
+// go test -v -run TestValidateEachRange .
+
+func TestValidateEachRange(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "each:range"`, func() {
+		g.Describe(`array`, func() {
+			type Array struct {
+				Pages   [2]int            `json:"pages"`
+				Bands   [2]string         `json:"bands"`
+				Artists [1][4]string      `json:"artists"`
+				Songs   [1][]string       `json:"songs"`
+				Albums  [1]map[int]string `json:"albums"`
+			}
+
+			g.Describe(`array:numeric`, func() {
+				filter := Filter{
+					{
+						Field: "Pages",
+						Check: Rule{"each:range", Range{35, 45}},
+					},
+				}
+
+				g.It("success when the element value matches the range", func() {
+					hints := filter.Validate(Array{
+						Pages: [2]int{35, 45},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list within the range", func() {
+					filter := Filter{
+						{
+							Field: "Pages",
+							Check: Rule{"each:range", Range{0, 1}},
+						},
+					}
+
+					hints := filter.Validate(Array{
+						Pages: [2]int{},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when given an empty data list that not match the range", func() {
+					hints := filter.Validate(Array{
+						Pages: [2]int{},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					hints := filter.Validate(Array{
+						Pages: [2]int{15, 25},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					hints := filter.Validate(Array{
+						Pages: [2]int{135, 145},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:string`, func() {
+				filter := Filter{
+					{
+						Field: "Bands",
+						Check: Rule{"each:range", Range{9, 11}},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					hints := filter.Validate(Array{
+						Bands: [2]string{
+							"The Beatles",
+							"Aerosmith",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when given an empty data list", func() {
+					hints := filter.Validate(Array{
+						Bands: [2]string{},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					hints := filter.Validate(Array{
+						Bands: [2]string{
+							"Queen",
+							"AC/DC",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					hints := filter.Validate(Array{
+						Bands: [2]string{
+							"Rolling Stones",
+							"Led Zeppelin",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:array`, func() {
+				value := Array{
+					Artists: [1][4]string{{
+						"Kurt Donald Cobain",
+						"David Eric Grohl",
+						"Angus Young",
+						"Steven Victor Tallarico",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:slice`, func() {
+				value := Array{
+					Songs: [1][]string{{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"No pain no gain",
+						"Send Me an Angel",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Array{
+						Songs: [1][]string{},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[0] must contain 2..4 items")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:map`, func() {
+				value := Array{
+					Albums: [1]map[int]string{{
+						1973: "Aerosmith",
+						1974: "Get Your Wings",
+						1999: "Eye II Eye",
+						2007: "Humanity",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Array{
+						Albums: [1]map[int]string{},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[0] must contain 2..4 items")
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[0] must contain 1..2 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			type Slice struct {
+				Pages   []int            `json:"pages"`
+				Bands   []string         `json:"bands"`
+				Artists [][4]string      `json:"artists"`
+				Artist  [][4]string      `json:"artist"`
+				Songs   [][]string       `json:"songs"`
+				Albums  []map[int]string `json:"albums"`
+			}
+
+			g.Describe(`slice:numeric`, func() {
+				filter := Filter{
+					{
+						Field: "Pages",
+						Check: Rule{"each:range", Range{35, 45}},
+					},
+				}
+
+				g.It("success when the element value matches the range", func() {
+					hints := filter.Validate(Slice{
+						Pages: []int{35, 45},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					hints := filter.Validate(Slice{
+						Pages: []int{},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					hints := filter.Validate(Slice{
+						Pages: []int{15, 25},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					hints := filter.Validate(Slice{
+						Pages: []int{135, 145},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:string`, func() {
+				filter := Filter{
+					{
+						Field: "Bands",
+						Check: Rule{"each:range", Range{9, 11}},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					hints := filter.Validate(Slice{
+						Bands: []string{
+							"The Beatles",
+							"Aerosmith",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					hints := filter.Validate(Slice{
+						Bands: []string{},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					hints := filter.Validate(Slice{
+						Bands: []string{
+							"Queen",
+							"AC/DC",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					hints := filter.Validate(Slice{
+						Bands: []string{
+							"Rolling Stones",
+							"Led Zeppelin",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:array`, func() {
+				value := Slice{
+					Artists: [][4]string{{
+						"Kurt Donald Cobain",
+						"David Eric Grohl",
+						"Angus Young",
+						"Steven Victor Tallarico",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Slice{
+						Artists: [][4]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:slice`, func() {
+				value := Slice{
+					Songs: [][]string{{
+						"We all live in a yellow submarine",
+						"All you need is love",
+						"No pain no gain",
+						"Send Me an Angel",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Slice{
+						Songs: [][]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[0] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:map`, func() {
+				value := Slice{
+					Albums: []map[int]string{{
+						1973: "Aerosmith",
+						1974: "Get Your Wings",
+						1999: "Eye II Eye",
+						2007: "Humanity",
+					}},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Slice{
+						Albums: []map[int]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[0] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[0] must contain 1..2 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			type Map struct {
+				Pages   map[string]int            `json:"pages"`
+				Bands   map[int]string            `json:"bands"`
+				Artists map[string][4]string      `json:"artists"`
+				Artist  map[string][4]string      `json:"artist"`
+				Songs   map[string][]string       `json:"songs"`
+				Albums  map[string]map[int]string `json:"albums"`
+			}
+
+			g.Describe(`map:numeric`, func() {
+				filter := Filter{
+					{
+						Field: "Pages",
+						Check: Rule{"each:range", Range{35, 45}},
+					},
+				}
+
+				g.It("success when the element value matches the range", func() {
+					hints := filter.Validate(Map{
+						Pages: map[string]int{
+							"item1": 35,
+							"item2": 45,
+						},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					hints := filter.Validate(Map{
+						Pages: map[string]int{},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element value is below the range", func() {
+					hints := filter.Validate(Map{
+						Pages: map[string]int{
+							"item1": 15,
+							"item2": 35,
+						},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[item1] must be in the range 35..45")
+				})
+
+				g.It("failure when the element value is above the range", func() {
+					hints := filter.Validate(Map{
+						Pages: map[string]int{
+							"item1": 45,
+							"item2": 55,
+						},
+					})
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("pages item[item2] must be in the range 35..45")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:string`, func() {
+				filter := Filter{
+					{
+						Field: "Bands",
+						Check: Rule{"each:range", Range{9, 11}},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					hints := filter.Validate(Map{
+						Bands: map[int]string{
+							1: "The Beatles",
+							2: "Aerosmith",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					hints := filter.Validate(Map{
+						Bands: map[int]string{},
+					})
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					hints := filter.Validate(Map{
+						Bands: map[int]string{
+							1: "Queen",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[1] must contain 9..11 characters")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					hints := filter.Validate(Map{
+						Bands: map[int]string{
+							1: "Rolling Stones",
+						},
+					})
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("bands item[1] must contain 9..11 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:array`, func() {
+				value := Map{
+					Artists: map[string][4]string{
+						"signers": {
+							"Kurt Donald Cobain",
+							"David Eric Grohl",
+							"Angus Young",
+							"Steven Victor Tallarico",
+						},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Map{
+						Artists: map[string][4]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[signers] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Artists",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("artists item[signers] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:slice`, func() {
+				value := Map{
+					Songs: map[string][]string{
+						"Scorpions": {
+							"Rock You Like a Hurricane",
+							"When the smoke is going down",
+							"Still Loving You",
+							"Here in my heart",
+						},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Map{
+						Songs: map[string][]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[Scorpions] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Songs",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("songs item[Scorpions] must contain 1..2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:map`, func() {
+				value := Map{
+					Albums: map[string]map[int]string{
+						"Scorpions": {
+							1975: "In Trance",
+							1999: "Eye II Eye",
+							2000: "Moment of Glory",
+							2007: "Humanity",
+						},
+					},
+				}
+
+				g.It("success when the element length matches the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(value)
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("success when given an empty data list", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{2, 4}},
+						},
+					}
+
+					hints := filter.Validate(Map{
+						Albums: map[string]map[int]string{},
+					})
+
+					g.Assert(len(hints)).Equal(0, hints)
+				})
+
+				g.It("failure when the element length is below the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{5, 10}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain 5..10 items")
+				})
+
+				g.It("failure when the element length is above the range", func() {
+					filter := Filter{
+						{
+							Field: "Albums",
+							Check: Rule{"each:range", Range{1, 2}},
+						},
+					}
+
+					hints := filter.Validate(value)
+
+					g.Assert(len(hints)).Equal(1, hints)
+					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain 1..2 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			type Slice struct {
+				Bands []string `json:"bands"`
+			}
+
+			g.It("success when given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Bands",
+						Check: Rule{"each:range", Range{9, 11}},
+					},
+				}
+
+				hints := filter.Validate(Slice{})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when given an invalid rule", func() {
+				filter := Filter{
+					{
+						Field: "Bands",
+						Check: Rule{"each:range"},
+					},
+				}
+
+				hints := filter.Validate(Slice{
+					Bands: []string{
+						"The Beatles",
+						"Aerosmith",
+					},
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal("bands has invalid rule")
+			})
+		})
+	})
+}
+
 // go test -v -run TestValidateEachMatch .
 
 func TestValidateEachMatch(t *testing.T) {
