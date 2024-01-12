@@ -2656,6 +2656,829 @@ func TestCompareEachMax(t *testing.T) {
 	})
 }
 
+// go test -v -run TestCompareEachEq .
+
+func TestCompareEachEq(t *testing.T) {
+	g := Goblin(t)
+
+	g.Describe(`Rule "each:eq"`, func() {
+		g.Describe(`array`, func() {
+			g.Describe(`array:numeric`, func() {
+				g.It("success when the element value equals the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([2]int{15, 15})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([0]int{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is less than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([2]int{5, 10})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must be exactly 15")
+				})
+
+				g.It("failure when the element value is greater than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([2]int{25, 30})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must be exactly 15")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:string`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([2]string{
+						"test",
+						"code",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([0]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(33)
+					value := reflect.ValueOf([2]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 33 characters")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([2]string{
+						"No pain no gain",
+						"Fight fire with fire",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 15 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:array`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([0][0]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][1]string{
+						{
+							"We all live in a yellow submarine",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:slice`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([0][]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`array:map`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([0]map[int]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([2]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`slice`, func() {
+			g.Describe(`slice:numeric`, func() {
+				g.It("success when the element value equals the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([]int{15, 15})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]int{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is less than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([]int{5, 10})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must be exactly 15")
+				})
+
+				g.It("failure when the element value is greater than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([]int{25, 30})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must be exactly 15")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:string`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf([]string{
+						"test",
+						"code",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(33)
+					value := reflect.ValueOf([]string{
+						"We all live in a yellow submarine",
+						"All you need is love",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 33 characters")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf([]string{
+						"No pain no gain",
+						"Fight fire with fire",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 15 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:array`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][0]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				// g.It("failure when the element length is less than expected", func() {
+				// 	proto := reflect.ValueOf(2)
+				// 	value := reflect.ValueOf([][2]string{
+				// 		{
+				// 			"We all live in a yellow submarine",
+				// 			"All you need is love",
+				// 		},
+				// 		{
+				// 			"No pain no gain",
+				// 		},
+				// 	})
+
+				// 	result := compare("each:eq", proto, value)
+				// 	g.Assert(result).Equal("item[1] must contain exactly 2 items")
+				// })
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([][2]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:slice`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([][]string{
+						{
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						{
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`slice:map`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+							2: "Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([]map[int]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[1] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf([]map[int]string{
+						{
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						{
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[0] must contain exactly 1 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe(`map`, func() {
+			g.Describe(`map:numeric`, func() {
+				g.It("success when the element value equals the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf(map[string]int{
+						"first":  15,
+						"second": 15,
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf(map[string]int{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element value is less than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf(map[string]int{
+						"first":  5,
+						"second": 15,
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[first] must be exactly 15")
+				})
+
+				g.It("failure when the element value is greater than the expected number", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf(map[string]int{
+						"first":  15,
+						"second": 30,
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[second] must be exactly 15")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:string`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(4)
+					value := reflect.ValueOf(map[int]string{
+						1: "test",
+						2: "code",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(10)
+					value := reflect.ValueOf([]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(33)
+					value := reflect.ValueOf(map[int]string{
+						1: "We all live in a yellow submarine",
+						2: "All you need is love",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[2] must contain exactly 33 characters")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(15)
+					value := reflect.ValueOf(map[int]string{
+						1: "No pain no gain",
+						2: "Fight fire with fire",
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[2] must contain exactly 15 characters")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:array`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][2]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][0]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][1]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][3]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"While My Guitar Gently Weeps",
+							"All you need is love",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain exactly 2 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:slice`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+							"Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Scorpions] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf(map[string][]string{
+						"Beatles": {
+							"We all live in a yellow submarine",
+							"All you need is love",
+						},
+						"Scorpions": {
+							"No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain exactly 1 items")
+				})
+			})
+
+			// ...
+
+			g.Describe(`map:map`, func() {
+				g.It("success when the element length match", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+							2: "Send Me an Angel",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("success when given an empty data list", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string]map[int]string{})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("")
+				})
+
+				g.It("failure when the element length is less than expected", func() {
+					proto := reflect.ValueOf(2)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Scorpions] must contain exactly 2 items")
+				})
+
+				g.It("failure when the element value is greater than expected", func() {
+					proto := reflect.ValueOf(1)
+					value := reflect.ValueOf(map[string]map[int]string{
+						"Beatles": {
+							1: "We all live in a yellow submarine",
+							2: "All you need is love",
+						},
+						"Scorpions": {
+							1: "No pain no gain",
+						},
+					})
+
+					result := compare("each:eq", proto, value)
+					g.Assert(result).Equal("item[Beatles] must contain exactly 1 items")
+				})
+			})
+		})
+
+		// ...
+
+		g.Describe("invalidity", func() {
+			g.It("failure when given an invalid threshold", func() {
+				proto := reflect.ValueOf(nil)
+				value := reflect.ValueOf("Here In My Heart")
+
+				result := compare("each:eq", proto, value)
+				g.Assert(result).Equal(MsgInvalidRule)
+			})
+
+			g.It(`failure when given an invalid value`, func() {
+				proto := reflect.ValueOf(10)
+				value := reflect.ValueOf(nil)
+
+				result := compare("each:eq", proto, value)
+				g.Assert(result).Equal(MsgInvalidValue)
+			})
+		})
+	})
+}
+
 // go test -v -run TestCompareEachMatch .
 
 func TestCompareEachMatch(t *testing.T) {
