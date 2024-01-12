@@ -5643,7 +5643,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Pages",
-						Check: Rule{"each:range", Range{35, 45}},
+						Check: Rule{"each:range", []uint8{35, 45}},
 					},
 				}
 
@@ -5658,7 +5658,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Pages",
-							Check: Rule{"each:range", Range{0, 1}},
+							Check: Rule{"each:range", []uint8{0, 1}},
 						},
 					}
 
@@ -5699,7 +5699,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Bands",
-						Check: Rule{"each:range", Range{9, 11}},
+						Check: Rule{"each:range", []uint8{9, 11}},
 					},
 				}
 
@@ -5764,7 +5764,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -5776,7 +5776,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -5789,7 +5789,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -5815,7 +5815,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -5827,7 +5827,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -5843,7 +5843,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -5857,7 +5857,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -5884,7 +5884,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -5896,7 +5896,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -5912,7 +5912,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -5925,7 +5925,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -5952,7 +5952,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Pages",
-						Check: Rule{"each:range", Range{35, 45}},
+						Check: Rule{"each:range", []uint8{35, 45}},
 					},
 				}
 
@@ -5993,7 +5993,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Bands",
-						Check: Rule{"each:range", Range{9, 11}},
+						Check: Rule{"each:range", []uint8{9, 11}},
 					},
 				}
 
@@ -6056,7 +6056,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6068,7 +6068,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6083,7 +6083,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6096,7 +6096,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6122,7 +6122,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6134,7 +6134,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6149,7 +6149,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6163,7 +6163,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6190,7 +6190,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6202,7 +6202,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6217,7 +6217,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6230,7 +6230,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6257,7 +6257,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Pages",
-						Check: Rule{"each:range", Range{35, 45}},
+						Check: Rule{"each:range", []uint8{35, 45}},
 					},
 				}
 
@@ -6307,7 +6307,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Bands",
-						Check: Rule{"each:range", Range{9, 11}},
+						Check: Rule{"each:range", []uint8{9, 11}},
 					},
 				}
 
@@ -6370,7 +6370,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6382,7 +6382,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6397,7 +6397,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6411,7 +6411,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Artists",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6440,7 +6440,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6452,7 +6452,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6467,7 +6467,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6481,7 +6481,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Songs",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6510,7 +6510,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6522,7 +6522,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{2, 4}},
+							Check: Rule{"each:range", []uint8{2, 4}},
 						},
 					}
 
@@ -6537,7 +6537,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{5, 10}},
+							Check: Rule{"each:range", []uint8{5, 10}},
 						},
 					}
 
@@ -6551,7 +6551,7 @@ func TestValidateEachRange(t *testing.T) {
 					filter := Filter{
 						{
 							Field: "Albums",
-							Check: Rule{"each:range", Range{1, 2}},
+							Check: Rule{"each:range", []uint8{1, 2}},
 						},
 					}
 
@@ -6574,7 +6574,7 @@ func TestValidateEachRange(t *testing.T) {
 				filter := Filter{
 					{
 						Field: "Bands",
-						Check: Rule{"each:range", Range{9, 11}},
+						Check: Rule{"each:range", []uint8{9, 11}},
 					},
 				}
 

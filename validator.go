@@ -30,6 +30,10 @@ const (
 	MsgInvalidBodyVal = "invalid body value"
 )
 
+var (
+	refNil = reflect.ValueOf(nil)
+)
+
 type Group []any
 type Range [2]any
 type Rule [2]any
@@ -182,7 +186,7 @@ func filterRange(proto, value reflect.Value) string {
 	valMin := proto.Index(0)
 	valMax := proto.Index(1)
 
-	if valMin.IsNil() || valMax.IsNil() {
+	if valMin.Equal(refNil) || valMax.Equal(refNil) {
 		return MsgInvalidRule
 	}
 
@@ -195,8 +199,12 @@ func filterRange(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgRangeSetLen, valMin.Interface(), valMax.Interface())
 
-	default:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		hint = fmt.Sprintf(MsgRange, valMin.Interface(), valMax.Interface())
+
+	default:
+		hint = MsgUnsupportType
 	}
 
 	if !IsMin(valMin.Interface(), value.Interface()) {
