@@ -2,7 +2,6 @@ package validator
 
 import (
 	"math"
-	"strings"
 	"testing"
 	"time"
 
@@ -11,22 +10,22 @@ import (
 
 // go clean -testcache
 // go test -v -cover .
-// go test -v -cover -run TestValidate .
+// go test -v -cover -run TestIsValid .
 
-// go test -v -run TestValidateMin .
+// go test -v -run TestIsValidMin .
 
-func TestValidateMin(t *testing.T) {
+func TestIsValidMin(t *testing.T) {
+	type Article struct {
+		Title   string
+		Age     uint8
+		Images  []string
+		Phones  [4]string
+		Options map[int]string
+	}
+
 	g := Goblin(t)
 
 	g.Describe(`Rule "min"`, func() {
-		type Article struct {
-			Title   string         `json:"title"`
-			Age     uint8          `json:"age"`
-			Images  []string       `json:"images"`
-			Phones  [4]string      `json:"phones"`
-			Options map[int]string `json:"options"`
-		}
-
 		g.Describe("numeric", func() {
 			g.It("success when the value exceeds the min threshold", func() {
 				filter := Filter{
@@ -36,8 +35,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 21})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 21})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the value reaches the min threshold", func() {
@@ -48,8 +47,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 21})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 21})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the value is less than the min threshold", func() {
@@ -60,9 +59,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 16})
-				g.Assert(len(hints)).Equal(1)
-				g.Assert(hints[0]).Equal("age must be at least 18")
+				result := filter.IsValid(Article{Age: 16})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -79,8 +77,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the min threshold", func() {
@@ -91,8 +89,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than the min threshold", func() {
@@ -103,9 +101,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain at least 30 characters")
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -122,8 +119,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the min threshold", func() {
@@ -134,8 +131,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than the min threshold", func() {
@@ -146,9 +143,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain at least 8 items")
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -165,8 +161,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the min threshold", func() {
@@ -177,8 +173,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than the min threshold", func() {
@@ -189,9 +185,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain at least 8 items")
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -213,8 +208,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the min threshold", func() {
@@ -225,8 +220,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than the min threshold", func() {
@@ -237,9 +232,8 @@ func TestValidateMin(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain at least 8 items")
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -267,15 +261,13 @@ func TestValidateMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Article{})
-					g.Assert(len(hints)).Equal(0, hints)
+					result := filter.IsValid(Article{})
+					g.Assert(result).IsTrue(fieldName)
 				}
 			})
 
 			g.It("failure when missing rule value", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -283,16 +275,13 @@ func TestValidateMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 
 			g.It("failure when given an empty rule", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -300,29 +289,28 @@ func TestValidateMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateMax .
+// go test -v -run TestIsValidMax .
 
-func TestValidateMax(t *testing.T) {
+func TestIsValidMax(t *testing.T) {
+	type Article struct {
+		Title   string
+		Age     uint8
+		Images  []string
+		Phones  [4]string
+		Options map[int]string
+	}
+
 	g := Goblin(t)
 
 	g.Describe(`Rule "max"`, func() {
-		type Article struct {
-			Title   string         `json:"title"`
-			Age     uint8          `json:"age"`
-			Images  []string       `json:"images"`
-			Phones  [4]string      `json:"phones"`
-			Options map[int]string `json:"options"`
-		}
-
 		g.Describe("numeric", func() {
 			g.It("success when the value is less than the max threshold", func() {
 				filter := Filter{
@@ -332,8 +320,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 18})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 18})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the value reaches the max threshold", func() {
@@ -344,8 +332,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 21})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 21})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the value exceeds the max threshold", func() {
@@ -356,9 +344,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 21})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be up to 12")
+				result := filter.IsValid(Article{Age: 21})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -375,8 +362,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the max threshold", func() {
@@ -387,8 +374,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length exceeds the max threshold", func() {
@@ -399,9 +386,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain up to 10 characters")
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -418,8 +404,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the max threshold", func() {
@@ -430,8 +416,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length exceeds the max threshold", func() {
@@ -442,9 +428,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain up to 2 items")
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -461,8 +446,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the max threshold", func() {
@@ -473,8 +458,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length exceeds the max threshold", func() {
@@ -485,9 +470,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain up to 2 items")
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -509,8 +493,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("success when the length reaches the max threshold", func() {
@@ -521,8 +505,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length exceeds the max threshold", func() {
@@ -533,9 +517,8 @@ func TestValidateMax(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain up to 2 items")
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -563,15 +546,13 @@ func TestValidateMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Article{})
-					g.Assert(len(hints)).Equal(0, hints)
+					result := filter.IsValid(Article{})
+					g.Assert(result).IsTrue(fieldName)
 				}
 			})
 
 			g.It("failure when missing rule proto", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -579,16 +560,13 @@ func TestValidateMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 
 			g.It("failure when given an empty rule", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -596,29 +574,28 @@ func TestValidateMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateEq .
+// go test -v -run TestIsValidEq .
 
-func TestValidateEq(t *testing.T) {
+func TestIsValidEq(t *testing.T) {
+	type Article struct {
+		Title   string
+		Age     uint8
+		Images  []string
+		Phones  [4]string
+		Options map[int]string
+	}
+
 	g := Goblin(t)
 
 	g.Describe(`Rule "eq" (equal)`, func() {
-		type Article struct {
-			Title   string         `json:"title"`
-			Age     uint8          `json:"age"`
-			Images  []string       `json:"images"`
-			Phones  [4]string      `json:"phones"`
-			Options map[int]string `json:"options"`
-		}
-
 		g.Describe("numeric", func() {
 			g.It("success when the value equals a threshold", func() {
 				filter := Filter{
@@ -628,8 +605,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 18})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 18})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the value is less than a threshold", func() {
@@ -640,9 +617,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 18})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be exactly 21")
+				result := filter.IsValid(Article{Age: 18})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the value exceeds a threshold", func() {
@@ -653,9 +629,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 21})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be exactly 18")
+				result := filter.IsValid(Article{Age: 21})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -672,8 +647,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than a threshold", func() {
@@ -684,9 +659,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain exactly 30 characters")
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the length exceeds a threshold", func() {
@@ -697,9 +671,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: strFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain exactly 10 characters")
+				result := filter.IsValid(Article{Title: strFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -716,8 +689,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than a threshold", func() {
@@ -728,9 +701,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain exactly 8 items")
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the value exceeds a threshold", func() {
@@ -741,9 +713,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Phones: arrFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain exactly 2 items")
+				result := filter.IsValid(Article{Phones: arrFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -760,8 +731,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than a threshold", func() {
@@ -772,9 +743,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain exactly 8 items")
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the value exceeds a threshold", func() {
@@ -785,9 +755,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Images: sliceFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain exactly 2 items")
+				result := filter.IsValid(Article{Images: sliceFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -809,8 +778,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is less than a threshold", func() {
@@ -821,9 +790,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain exactly 8 items")
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the value exceeds a threshold", func() {
@@ -834,9 +802,8 @@ func TestValidateEq(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Options: mapFilled})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain exactly 2 items")
+				result := filter.IsValid(Article{Options: mapFilled})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -864,15 +831,13 @@ func TestValidateEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Article{})
-					g.Assert(len(hints)).Equal(0, hints)
+					result := filter.IsValid(Article{})
+					g.Assert(result).IsTrue(fieldName)
 				}
 			})
 
 			g.It("failure when missing rule value", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -880,16 +845,13 @@ func TestValidateEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 
 			g.It("failure when given an empty rule", func() {
 				for _, fieldName := range fieldsToCheck {
-					expectMsg := strings.ToLower(fieldName) + " " + MsgInvalidRule
-
 					filter := Filter{
 						{
 							Field: fieldName,
@@ -897,29 +859,30 @@ func TestValidateEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(article)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal(expectMsg)
+					result := filter.IsValid(article)
+					g.Assert(result).IsFalse()
 				}
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateRange .
+// go test -v -run TestIsValidRange .
 
-func TestValidateRange(t *testing.T) {
+func TestIsValidRange(t *testing.T) {
+	type Article struct {
+		Title     string
+		Age       uint8
+		Images    []string
+		FilledArr [4]string
+		Options   map[string]string
+
+		// Date time.Time
+	}
+
 	g := Goblin(t)
 
 	g.Describe(`Rule "range"`, func() {
-		type Article struct {
-			Title   string            `json:"title"`
-			Age     uint8             `json:"age"`
-			Images  []string          `json:"images"`
-			Phones  [4]string         `json:"phones"`
-			Options map[string]string `json:"options"`
-		}
-
 		g.Describe(`numeric`, func() {
 			g.It("success when the value matches the range", func() {
 				filter := Filter{
@@ -929,8 +892,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 18})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Age: 18})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when given below-range value", func() {
@@ -941,9 +904,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 16})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+				result := filter.IsValid(Article{Age: 16})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when given above-range value", func() {
@@ -954,9 +916,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Age: 31})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+				result := filter.IsValid(Article{Age: 31})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -971,8 +932,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: "all you need is love"})
-				g.Assert(len(hints)).Equal(0, hints)
+				result := filter.IsValid(Article{Title: "all you need is love"})
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is below the range", func() {
@@ -983,9 +944,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: "all you need is love"})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain 25..45 characters")
+				result := filter.IsValid(Article{Title: "all you need is love"})
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the length is above the range", func() {
@@ -996,9 +956,8 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{Title: "all you need is love"})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("title must contain 3..18 characters")
+				result := filter.IsValid(Article{Title: "all you need is love"})
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -1008,48 +967,46 @@ func TestValidateRange(t *testing.T) {
 			g.It("success when the length matches the range", func() {
 				filter := Filter{
 					{
-						Field: "Phones",
+						Field: "FilledArr",
 						Check: Range{1, 4},
 					},
 				}
 
-				hints := filter.Validate(Article{
-					Phones: [4]string{"t", "e", "s", "t"},
+				result := filter.IsValid(Article{
+					FilledArr: [4]string{"t", "e", "s", "t"},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is below the range", func() {
 				filter := Filter{
 					{
-						Field: "Phones",
+						Field: "FilledArr",
 						Check: Range{10, 80},
 					},
 				}
 
-				hints := filter.Validate(Article{
-					Phones: [4]string{"t", "e", "s", "t"},
+				result := filter.IsValid(Article{
+					FilledArr: [4]string{"t", "e", "s", "t"},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain 10..80 items")
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the length is above the range", func() {
 				filter := Filter{
 					{
-						Field: "Phones",
+						Field: "FilledArr",
 						Check: Range{1, 3},
 					},
 				}
 
-				hints := filter.Validate(Article{
-					Phones: [4]string{"t", "e", "s", "t"},
+				result := filter.IsValid(Article{
+					FilledArr: [4]string{"t", "e", "s", "t"},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("phones must contain 1..3 items")
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -1064,11 +1021,11 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Images: []string{"jpeg", "jpg", "png", "gif"},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is below the range", func() {
@@ -1079,12 +1036,11 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Images: []string{"jpeg", "jpg", "png", "gif"},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain 10..80 items")
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the length is above the range", func() {
@@ -1095,12 +1051,11 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Images: []string{"jpeg", "jpg", "png", "gif"},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("images must contain 1..3 items")
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -1115,7 +1070,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Options: map[string]string{
 						"jpeg": "image/jpeg",
 						"jpg":  "image/jpeg",
@@ -1124,7 +1079,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(result).IsTrue()
 			})
 
 			g.It("failure when the length is below the range", func() {
@@ -1135,7 +1090,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Options: map[string]string{
 						"jpeg": "image/jpeg",
 						"jpg":  "image/jpeg",
@@ -1144,8 +1099,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain 10..80 items")
+				g.Assert(result).IsFalse()
 			})
 
 			g.It("failure when the length is above the range", func() {
@@ -1156,7 +1110,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{
+				result := filter.IsValid(Article{
 					Options: map[string]string{
 						"jpeg": "image/jpeg",
 						"jpg":  "image/jpeg",
@@ -1165,8 +1119,7 @@ func TestValidateRange(t *testing.T) {
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("options must contain 1..3 items")
+				g.Assert(result).IsFalse()
 			})
 		})
 
@@ -1188,9 +1141,8 @@ func TestValidateRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Article{Age: 31})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("age " + MsgInvalidRule)
+					result := filter.IsValid(Article{Age: 31})
+					g.Assert(result).IsFalse()
 				}
 			})
 
@@ -1202,19 +1154,18 @@ func TestValidateRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Article{})
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("age must be in the range 18..21")
+				result := filter.IsValid(Article{})
+				g.Assert(result).IsFalse()
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateYear .
+// go test -v -run TestIsValidYear .
 
-func TestValidateYear(t *testing.T) {
+func TestIsValidYear(t *testing.T) {
 	type Article struct {
-		Date time.Time `json:"date"`
+		Date time.Time
 	}
 
 	g := Goblin(t)
@@ -1231,8 +1182,8 @@ func TestValidateYear(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{Date: tm})
-			g.Assert(len(hints)).Equal(0, hints)
+			result := filter.IsValid(Article{Date: tm})
+			g.Assert(result).IsTrue()
 		})
 
 		g.It("failure when the value is not match", func() {
@@ -1243,19 +1194,18 @@ func TestValidateYear(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Date: *new(time.Time),
 			})
 
-			g.Assert(len(hints)).Equal(1, hints)
-			g.Assert(hints[0]).Equal("date must be exactly 2024")
+			g.Assert(result).IsFalse()
 		})
 	})
 }
 
-// go test -v -run TestValidateMatch .
+// go test -v -run TestIsValidMatch .
 
-func TestValidateMatch(t *testing.T) {
+func TestIsValidMatch(t *testing.T) {
 	type Article struct {
 		Hash string `json:"hash"`
 	}
@@ -1263,9 +1213,6 @@ func TestValidateMatch(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "match"`, func() {
-		msgInvalidRule := "hash " + MsgInvalidRule
-		msgInvalidValue := "hash " + MsgNotValid
-
 		g.It("success when the value matches the mask", func() {
 			filter := Filter{
 				{
@@ -1274,11 +1221,11 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
 			})
 
-			g.Assert(len(hints)).Equal(0, hints)
+			g.Assert(result).IsTrue()
 		})
 
 		g.It("success when given an empty mask", func() {
@@ -1289,11 +1236,11 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
 			})
 
-			g.Assert(len(hints)).Equal(0, hints)
+			g.Assert(result).IsTrue()
 		})
 
 		g.It("failure when the value does not match the mask", func() {
@@ -1304,12 +1251,11 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Hash: "Z0zZ0z19711zZz3z73z41z909z66zZzZ",
 			})
 
-			g.Assert(len(hints)).Equal(1, hints)
-			g.Assert(hints[0]).Equal(msgInvalidValue)
+			g.Assert(result).IsFalse()
 		})
 
 		g.It("failure when missing rule value", func() {
@@ -1320,12 +1266,11 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
 			})
 
-			g.Assert(len(hints)).Equal(1, hints)
-			g.Assert(hints[0]).Equal(msgInvalidRule)
+			g.Assert(result).IsFalse()
 		})
 
 		g.It("failure when given an empty rule", func() {
@@ -1336,12 +1281,11 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Hash: "b0fb0c19711bcf3b73f41c909f66bded",
 			})
 
-			g.Assert(len(hints)).Equal(1, hints)
-			g.Assert(hints[0]).Equal(msgInvalidRule)
+			g.Assert(result).IsFalse()
 		})
 
 		g.It("failure when given an empty value", func() {
@@ -1352,16 +1296,15 @@ func TestValidateMatch(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{})
-			g.Assert(len(hints)).Equal(1, hints)
-			g.Assert(hints[0]).Equal(msgInvalidValue)
+			result := filter.IsValid(Article{})
+			g.Assert(result).IsFalse(result)
 		})
 	})
 }
 
-// go test -v -run TestValidateEachMin .
+// go test -v -run TestIsValidEachMin .
 
-func TestValidateEachMin(t *testing.T) {
+func TestIsValidEachMin(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "each:min"`, func() {
@@ -1391,11 +1334,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the min threshold", func() {
@@ -1406,11 +1349,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1421,11 +1364,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Pages: [0]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -1436,12 +1379,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{5, 15},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be at least 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1456,14 +1398,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1474,14 +1416,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1492,11 +1434,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Bands: [0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -1507,15 +1449,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain at least 12 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1530,7 +1471,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -1543,7 +1484,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1554,7 +1495,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Klaus Meine",
@@ -1563,7 +1504,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1574,11 +1515,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Artists: [0][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -1589,7 +1530,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -1601,8 +1542,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1617,7 +1557,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -1630,7 +1570,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1641,7 +1581,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -1653,7 +1593,7 @@ func TestValidateEachMin(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1664,11 +1604,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Songs: [0][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -1679,7 +1619,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -1691,8 +1631,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1707,7 +1646,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -1720,7 +1659,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1731,7 +1670,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -1744,7 +1683,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1755,11 +1694,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Albums: [0]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -1770,7 +1709,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -1782,8 +1721,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -1809,11 +1747,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the min threshold", func() {
@@ -1824,11 +1762,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1839,11 +1777,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -1854,12 +1792,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{5, 15},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be at least 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1874,14 +1811,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1892,14 +1829,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1910,11 +1847,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -1925,15 +1862,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain at least 12 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -1948,7 +1884,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -1961,7 +1897,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -1972,7 +1908,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Klaus Meine",
@@ -1981,7 +1917,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -1992,11 +1928,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artist: [][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2007,7 +1943,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -2019,8 +1955,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2035,7 +1970,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2048,7 +1983,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2059,7 +1994,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2071,7 +2006,7 @@ func TestValidateEachMin(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2082,11 +2017,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2097,7 +2032,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2109,8 +2044,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2125,7 +2059,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -2138,7 +2072,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2149,7 +2083,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -2162,7 +2096,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2173,11 +2107,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2188,7 +2122,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -2200,8 +2134,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -2227,14 +2160,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 25,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the min threshold", func() {
@@ -2245,14 +2178,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 25,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2263,11 +2196,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -2278,15 +2211,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    5,
 							"Prologue": 15,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[Title] must be at least 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2301,14 +2233,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Aerosmith",
 							2: "Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2319,14 +2251,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Metallica",
 							2: "Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2337,11 +2269,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value is less than the min threshold", func() {
@@ -2352,15 +2284,14 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Led Zeppelin",
 							2: "Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[2] must contain at least 12 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2375,7 +2306,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Aerosmith": {
 								"Steven Victor Tallarico",
@@ -2388,7 +2319,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2399,7 +2330,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Scorpions": {
 								"Klaus Meine",
@@ -2408,7 +2339,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2419,11 +2350,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artist: map[string][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2434,7 +2365,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Nirvana": {
 								"Kurt Donald Cobain",
@@ -2443,8 +2374,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[Nirvana] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2459,7 +2389,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Aerosmith": {
 								"Walk This Way",
@@ -2472,7 +2402,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2483,7 +2413,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Led Zeppelin": {
 								"Kashmir",
@@ -2495,7 +2425,7 @@ func TestValidateEachMin(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2506,11 +2436,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2521,7 +2451,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Nirvana": {
 								"Lithium",
@@ -2535,8 +2465,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Metallica] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2551,7 +2480,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -2564,7 +2493,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the min threshold", func() {
@@ -2575,7 +2504,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -2588,7 +2517,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2599,11 +2528,11 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length is less than the min threshold", func() {
@@ -2614,7 +2543,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -2628,8 +2557,7 @@ func TestValidateEachMin(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain at least 4 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -2637,9 +2565,9 @@ func TestValidateEachMin(t *testing.T) {
 	})
 }
 
-// go test -v -run TestValidateEachMax .
+// go test -v -run TestIsValidEachMax .
 
-func TestValidateEachMax(t *testing.T) {
+func TestIsValidEachMax(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "each:max"`, func() {
@@ -2669,11 +2597,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the max threshold", func() {
@@ -2684,11 +2612,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2699,11 +2627,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Pages: [0]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value exceeds the max threshold", func() {
@@ -2714,12 +2642,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{5, 15},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[1] must be up to 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2734,14 +2661,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -2752,14 +2679,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2770,11 +2697,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Bands: [0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -2785,15 +2712,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain up to 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2808,7 +2734,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -2821,7 +2747,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -2832,7 +2758,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Klaus Meine",
@@ -2841,7 +2767,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2852,11 +2778,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Artists: [0][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -2867,7 +2793,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -2879,8 +2805,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2895,7 +2820,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2908,7 +2833,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -2919,7 +2844,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2931,7 +2856,7 @@ func TestValidateEachMax(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -2942,11 +2867,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Songs: [0][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -2957,7 +2882,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -2971,8 +2896,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -2987,7 +2911,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3000,7 +2924,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3011,7 +2935,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3024,7 +2948,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3035,11 +2959,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Albums: [0]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3050,7 +2974,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3064,8 +2988,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -3091,11 +3014,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the max threshold", func() {
@@ -3106,11 +3029,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 25},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3121,11 +3044,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value exceeds the max threshold", func() {
@@ -3136,12 +3059,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{5, 15},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[1] must be up to 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3156,14 +3078,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3174,14 +3096,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3192,11 +3114,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3207,15 +3129,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain up to 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3230,7 +3151,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -3243,7 +3164,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3254,7 +3175,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Klaus Meine",
@@ -3263,7 +3184,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3274,11 +3195,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artist: [][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3289,7 +3210,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -3301,8 +3222,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3317,7 +3237,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -3330,7 +3250,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3341,7 +3261,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -3353,7 +3273,7 @@ func TestValidateEachMax(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3364,11 +3284,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3379,7 +3299,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"Lithium",
@@ -3393,8 +3313,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3409,7 +3328,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3422,7 +3341,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3433,7 +3352,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3446,7 +3365,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3457,11 +3376,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3472,7 +3391,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -3486,8 +3405,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -3513,14 +3431,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 25,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element value reaches the max threshold", func() {
@@ -3531,14 +3449,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 25,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3549,11 +3467,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 value exceeds the max threshold", func() {
@@ -3564,15 +3482,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    5,
 							"Prologue": 15,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[Prologue] must be up to 10")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3587,14 +3504,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Aerosmith",
 							2: "Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3605,14 +3522,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Metallica",
 							2: "Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3623,11 +3540,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3638,15 +3555,14 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Led Zeppelin",
 							2: "Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain up to 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3661,7 +3577,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Aerosmith": {
 								"Steven Victor Tallarico",
@@ -3674,7 +3590,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3685,7 +3601,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Scorpions": {
 								"Klaus Meine",
@@ -3694,7 +3610,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3705,11 +3621,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artist: map[string][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3720,7 +3636,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Nirvana": {
 								"Kurt Donald Cobain",
@@ -3729,8 +3645,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[Nirvana] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3745,7 +3660,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Aerosmith": {
 								"Walk This Way",
@@ -3758,7 +3673,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3769,7 +3684,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Led Zeppelin": {
 								"Kashmir",
@@ -3781,7 +3696,7 @@ func TestValidateEachMax(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3792,11 +3707,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3807,7 +3722,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Nirvana": {
 								"Lithium",
@@ -3821,8 +3736,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Nirvana] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -3837,7 +3751,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -3850,7 +3764,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when the element length reaches the max threshold", func() {
@@ -3861,7 +3775,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -3874,7 +3788,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3885,11 +3799,11 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when at least 1 element length exceeds the max threshold", func() {
@@ -3900,7 +3814,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -3914,8 +3828,7 @@ func TestValidateEachMax(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Aerosmith] must contain up to 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -3923,9 +3836,9 @@ func TestValidateEachMax(t *testing.T) {
 	})
 }
 
-// go test -v -run TestValidateEachEq .
+// go test -v -run TestIsValidEachEq .
 
-func TestValidateEachEq(t *testing.T) {
+func TestIsValidEachEq(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "each:eq" (equal)`, func() {
@@ -3955,11 +3868,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 15},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -3970,11 +3883,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Pages: [0]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the value is less than a threshold", func() {
@@ -3985,12 +3898,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{5, 10},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the value exceeds a threshold", func() {
@@ -4001,12 +3913,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{25, 30},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4021,14 +3932,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4039,11 +3950,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Bands: [0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4054,15 +3965,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain exactly 9 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4073,15 +3983,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain exactly 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4096,7 +4005,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -4109,7 +4018,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4120,11 +4029,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Artists: [0][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4135,7 +4044,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Klaus Meine",
@@ -4144,8 +4053,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain exactly 4 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4156,7 +4064,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Artists: [2][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -4168,8 +4076,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4184,7 +4091,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4197,7 +4104,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4208,11 +4115,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Songs: [0][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4223,7 +4130,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4234,8 +4141,7 @@ func TestValidateEachEq(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[1] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4246,7 +4152,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [2][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4258,8 +4164,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4274,7 +4179,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4287,7 +4192,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4298,11 +4203,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Emptyness{
+					success := filter.IsValid(Emptyness{
 						Albums: [0]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4313,7 +4218,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4325,8 +4230,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[1] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4337,7 +4241,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [2]map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4349,8 +4253,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -4376,11 +4279,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 15},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4391,11 +4294,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the value is less than a threshold", func() {
@@ -4406,12 +4309,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{5, 10},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the value exceeds a threshold", func() {
@@ -4422,12 +4324,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{25, 30},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4442,14 +4343,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Aerosmith",
 							"Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4460,11 +4361,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4475,15 +4376,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Metallica",
 							"Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain exactly 9 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4494,15 +4394,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Led Zeppelin",
 							"Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain exactly 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4517,7 +4416,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Steven Victor Tallarico",
@@ -4530,7 +4429,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4541,11 +4440,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artist: [][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4556,7 +4455,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Klaus Meine",
@@ -4565,8 +4464,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain exactly 4 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4577,7 +4475,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][2]string{
 							{
 								"Kurt Donald Cobain",
@@ -4589,8 +4487,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4605,7 +4502,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4618,7 +4515,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4629,11 +4526,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4644,7 +4541,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4655,8 +4552,7 @@ func TestValidateEachEq(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[1] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4667,7 +4563,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{
 							{
 								"We all live in a yellow submarine",
@@ -4679,8 +4575,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4695,7 +4590,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4708,7 +4603,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4719,11 +4614,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4734,7 +4629,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4746,8 +4641,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[1] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4758,7 +4652,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{
 							{
 								1973: "Aerosmith",
@@ -4770,8 +4664,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -4797,14 +4690,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 15,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4815,11 +4708,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the value is less than a threshold", func() {
@@ -4830,15 +4723,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    5,
 							"Prologue": 15,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[Title] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the value exceeds a threshold", func() {
@@ -4849,15 +4741,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"Title":    15,
 							"Prologue": 30,
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[Prologue] must be exactly 15")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4872,14 +4763,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Aerosmith",
 							2: "Scorpions",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4890,11 +4781,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4905,15 +4796,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Metallica",
 							2: "Nirvana",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[2] must contain exactly 9 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -4924,15 +4814,14 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Led Zeppelin",
 							2: "Pink Floyd",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain exactly 10 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -4947,7 +4836,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Aerosmith": {
 								"Steven Victor Tallarico",
@@ -4960,7 +4849,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -4971,11 +4860,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artist: map[string][0]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -4986,7 +4875,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Scorpions": {
 								"Klaus Meine",
@@ -4995,8 +4884,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[Scorpions] must contain exactly 4 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -5007,7 +4895,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][2]string{
 							"Nirvana": {
 								"Kurt Donald Cobain",
@@ -5016,8 +4904,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[Nirvana] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5032,7 +4919,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Aerosmith": {
 								"Walk This Way",
@@ -5045,7 +4932,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5056,11 +4943,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -5071,7 +4958,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Led Zeppelin": {
 								"Kashmir",
@@ -5082,8 +4969,7 @@ func TestValidateEachEq(t *testing.T) {
 							},
 						},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Pink Floyd] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -5094,7 +4980,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{
 							"Nirvana": {
 								"Lithium",
@@ -5106,8 +4992,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Nirvana] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5122,7 +5007,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -5135,7 +5020,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5146,11 +5031,11 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is less than a threshold", func() {
@@ -5161,7 +5046,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -5173,8 +5058,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain exactly 2 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length exceeds a threshold", func() {
@@ -5185,7 +5069,7 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{
 							"Aerosmith": {
 								1973: "Aerosmith",
@@ -5197,17 +5081,16 @@ func TestValidateEachEq(t *testing.T) {
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Aerosmith] must contain exactly 1 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateEachRange .
+// go test -v -run TestIsValidEachRange .
 
-func TestValidateEachRange(t *testing.T) {
+func TestIsValidEachRange(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "each:range"`, func() {
@@ -5229,10 +5112,10 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element value matches the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{35, 45},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list within the range", func() {
@@ -5243,34 +5126,31 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when given an empty data list that not match the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element value is below the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{15, 25},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element value is above the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Pages: [2]int{135, 145},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5285,47 +5165,44 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element length matches the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"The Beatles",
 							"Aerosmith",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when given an empty data list", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is below the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Queen",
 							"AC/DC",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Bands: [2]string{
 							"Rolling Stones",
 							"Led Zeppelin",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5349,8 +5226,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5361,9 +5238,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain 5..10 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5374,9 +5250,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain 1..2 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5400,8 +5275,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when given an empty data list", func() {
@@ -5412,12 +5287,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Songs: [1][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain 2..4 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5428,10 +5302,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain 5..10 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5442,10 +5315,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain 1..2 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5469,8 +5341,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when given an empty data list", func() {
@@ -5481,12 +5353,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Array{
+					success := filter.IsValid(Array{
 						Albums: [1]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain 2..4 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5497,9 +5368,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain 5..10 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5510,9 +5380,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain 1..2 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -5538,33 +5407,31 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element value matches the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{35, 45},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element value is below the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{15, 25},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element value is above the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Pages: []int{135, 145},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[0] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5579,45 +5446,43 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element length matches the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"The Beatles",
 							"Aerosmith",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Queen",
 							"AC/DC",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Bands: []string{
 							"Rolling Stones",
 							"Led Zeppelin",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[0] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5641,8 +5506,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5653,11 +5518,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Artists: [][4]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5668,9 +5533,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain 5..10 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5681,9 +5545,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[0] must contain 1..2 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5707,8 +5570,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5719,11 +5582,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Songs: [][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5734,10 +5597,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain 5..10 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5748,10 +5610,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[0] must contain 1..2 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5775,8 +5636,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5787,11 +5648,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Slice{
+					success := filter.IsValid(Slice{
 						Albums: []map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5802,9 +5663,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain 5..10 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5815,9 +5675,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[0] must contain 1..2 items")
+					success := filter.IsValid(value)
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -5843,42 +5702,40 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element value matches the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"item1": 35,
 							"item2": 45,
 						},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element value is below the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"item1": 15,
 							"item2": 35,
 						},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[item1] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element value is above the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Pages: map[string]int{
 							"item1": 45,
 							"item2": 55,
 						},
 					})
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("pages item[item2] must be in the range 35..45")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5893,43 +5750,41 @@ func TestValidateEachRange(t *testing.T) {
 				}
 
 				g.It("success when the element length matches the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "The Beatles",
 							2: "Aerosmith",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{},
 					})
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Queen",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Bands: map[int]string{
 							1: "Rolling Stones",
 						},
 					})
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("bands item[1] must contain 9..11 characters")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -5955,8 +5810,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -5967,11 +5822,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Artists: map[string][4]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -5982,10 +5837,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[signers] must contain 5..10 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -5996,10 +5850,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("artists item[signers] must contain 1..2 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -6025,8 +5878,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -6037,11 +5890,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Songs: map[string][]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -6052,10 +5905,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Scorpions] must contain 5..10 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -6066,10 +5918,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("songs item[Scorpions] must contain 1..2 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 
@@ -6095,8 +5946,8 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
-					g.Assert(len(hints)).Equal(0, hints)
+					success := filter.IsValid(value)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("success when given an empty data list", func() {
@@ -6107,11 +5958,11 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(Map{
+					success := filter.IsValid(Map{
 						Albums: map[string]map[int]string{},
 					})
 
-					g.Assert(len(hints)).Equal(0, hints)
+					g.Assert(success).IsTrue()
 				})
 
 				g.It("failure when the element length is below the range", func() {
@@ -6122,10 +5973,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain 5..10 items")
+					g.Assert(success).IsFalse()
 				})
 
 				g.It("failure when the element length is above the range", func() {
@@ -6136,10 +5986,9 @@ func TestValidateEachRange(t *testing.T) {
 						},
 					}
 
-					hints := filter.Validate(value)
+					success := filter.IsValid(value)
 
-					g.Assert(len(hints)).Equal(1, hints)
-					g.Assert(hints[0]).Equal("albums item[Scorpions] must contain 1..2 items")
+					g.Assert(success).IsFalse()
 				})
 			})
 		})
@@ -6159,8 +6008,8 @@ func TestValidateEachRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{})
-				g.Assert(len(hints)).Equal(0, hints)
+				success := filter.IsValid(Slice{})
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("failure when given an invalid rule", func() {
@@ -6171,29 +6020,25 @@ func TestValidateEachRange(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Bands: []string{
 						"The Beatles",
 						"Aerosmith",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal("bands has invalid rule")
+				g.Assert(success).IsFalse()
 			})
 		})
 	})
 }
 
-// go test -v -run TestValidateEachMatch .
+// go test -v -run TestIsValidEachMatch .
 
-func TestValidateEachMatch(t *testing.T) {
+func TestIsValidEachMatch(t *testing.T) {
 	g := Goblin(t)
 
 	g.Describe(`Rule "each:match"`, func() {
-		msgInvalidRule := "hash " + MsgInvalidRule
-		msgInvalidValue := "hash item[1] " + MsgNotValid
-
 		g.Describe(`array`, func() {
 			type Array struct {
 				Hash  [2]string `json:"hash"`
@@ -6208,14 +6053,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("success when given an empty list", func() {
@@ -6226,11 +6071,11 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Empty: [0]string{},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("failure when at least 1 value does not match", func() {
@@ -6241,15 +6086,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"Z0zZ0z19711zZz3z73z41z909z66zZzZ",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when at least 1 value is empty", func() {
@@ -6260,15 +6104,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when missing mask", func() {
@@ -6279,15 +6122,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty mask", func() {
@@ -6298,15 +6140,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty rule", func() {
@@ -6317,15 +6158,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Array{
+				success := filter.IsValid(Array{
 					Hash: [2]string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 		})
 
@@ -6344,14 +6184,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("success when given an empty list", func() {
@@ -6362,11 +6202,11 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("failure when at least 1 value does not match", func() {
@@ -6377,15 +6217,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"Z0zZ0z19711zZz3z73z41z909z66zZzZ",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when at least 1 value is empty", func() {
@@ -6396,15 +6235,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when missing mask", func() {
@@ -6415,15 +6253,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty mask", func() {
@@ -6434,15 +6271,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty rule", func() {
@@ -6453,15 +6289,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Slice{
+				success := filter.IsValid(Slice{
 					Hash: []string{
 						"b0fb0c19711bcf3b73f41c909f66bded",
 						"37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 		})
 
@@ -6480,14 +6315,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "b0fb0c19711bcf3b73f41c909f66bded",
 						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("success when given an empty list", func() {
@@ -6498,11 +6333,11 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{},
 				})
 
-				g.Assert(len(hints)).Equal(0, hints)
+				g.Assert(success).IsTrue()
 			})
 
 			g.It("failure when at least 1 value does not match", func() {
@@ -6513,15 +6348,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "Z0zZ0z19711zZz3z73z41z909z66zZzZ",
 						2: "b0fb0c19711bcf3b73f41c909f66bded",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when at least 1 value is empty", func() {
@@ -6532,15 +6366,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "",
 						2: "b0fb0c19711bcf3b73f41c909f66bded",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidValue)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when missing mask", func() {
@@ -6551,15 +6384,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "b0fb0c19711bcf3b73f41c909f66bded",
 						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty mask", func() {
@@ -6570,15 +6402,14 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "b0fb0c19711bcf3b73f41c909f66bded",
 						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 
 			g.It("failure when given an empty rule", func() {
@@ -6589,163 +6420,477 @@ func TestValidateEachMatch(t *testing.T) {
 					},
 				}
 
-				hints := filter.Validate(Map{
+				success := filter.IsValid(Map{
 					Hash: map[int]string{
 						1: "b0fb0c19711bcf3b73f41c909f66bded",
 						2: "37763f73e30e7b0bfbfffb9643c1cbc8",
 					},
 				})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(msgInvalidRule)
+				g.Assert(success).IsFalse()
 			})
 		})
 
 	})
 }
 
-// go test -v -run TestValidateNonZero .
+// go test -v -run TestIsValidNonZero .
 
-func TestValidateNonZero(t *testing.T) {
+func TestIsValidNonZero(t *testing.T) {
+	type Article struct {
+		Int8       int8
+		Int16      int16
+		Int32      int32
+		Int64      int64
+		Int        int
+		Uint8      uint8
+		Uint16     uint16
+		Uint32     uint32
+		Uint64     uint64
+		Uint       uint
+		Float32    float32
+		Float64    float64
+		Complex64  complex64
+		Complex128 complex128
+		Bool       bool
+		String     string
+		Struct     time.Time
+	}
+
 	g := Goblin(t)
 
 	g.Describe(`Rule NON_ZERO`, func() {
-		type Article struct {
-			// numeric
+		g.It("success when given a non-zero int8 value", func() {
+			filter := Filter{
+				{
+					Field: "Int8",
+					Check: NON_ZERO,
+				},
+			}
 
-			Int8       int8
-			Int16      int16
-			Int32      int32
-			Int64      int64
-			Int        int
-			Uint8      uint8
-			Uint16     uint16
-			Uint32     uint32
-			Uint64     uint64
-			Uint       uint
-			Float32    float32
-			Float64    float64
-			Complex64  complex64
-			Complex128 complex128
+			result := filter.IsValid(Article{Int8: math.MinInt8})
+			g.Assert(result).IsTrue()
+		})
 
-			// flag
+		g.It("success when given a non-zero int16 value", func() {
+			filter := Filter{
+				{
+					Field: "Int16",
+					Check: NON_ZERO,
+				},
+			}
 
-			Bool bool
+			result := filter.IsValid(Article{Int16: math.MinInt16})
+			g.Assert(result).IsTrue()
+		})
 
-			// lengthable
+		g.It("success when given a non-zero int32 value", func() {
+			filter := Filter{
+				{
+					Field: "Int32",
+					Check: NON_ZERO,
+				},
+			}
 
-			String string
-			Array  [1]int
-			Slice  []int
-			Map    map[int]string
-			Chan   chan int
+			result := filter.IsValid(Article{Int32: math.MinInt32})
+			g.Assert(result).IsTrue()
+		})
 
-			// struct
+		g.It("success when given a non-zero int64 value", func() {
+			filter := Filter{
+				{
+					Field: "Int64",
+					Check: NON_ZERO,
+				},
+			}
 
-			Struct    time.Time
-			Func      func() string
-			Interface interface{}
-		}
+			result := filter.IsValid(Article{Int64: math.MinInt64})
+			g.Assert(result).IsTrue()
+		})
 
-		type TestItem struct {
-			Field string
-			Val   Article
-		}
+		g.It("success when given a non-zero int value", func() {
+			filter := Filter{
+				{
+					Field: "Int",
+					Check: NON_ZERO,
+				},
+			}
 
-		nonEmptyValues := []TestItem{
-			{Field: "Int8", Val: Article{Int8: math.MinInt8}},
-			{Field: "Int16", Val: Article{Int16: math.MinInt16}},
-			{Field: "Int32", Val: Article{Int32: math.MinInt32}},
-			{Field: "Int64", Val: Article{Int64: math.MinInt64}},
-			{Field: "Int", Val: Article{Int: math.MinInt}},
-			{Field: "Uint8", Val: Article{Uint8: uint8(1)}},
-			{Field: "Uint16", Val: Article{Uint16: uint16(1)}},
-			{Field: "Uint32", Val: Article{Uint32: uint32(1)}},
-			{Field: "Uint64", Val: Article{Uint64: uint64(1)}},
-			{Field: "Uint", Val: Article{Uint: uint(1)}},
-			{Field: "Float32", Val: Article{Float32: float32(math.MaxFloat32)}},
-			{Field: "Float64", Val: Article{Float64: float64(math.MaxFloat64)}},
-			{Field: "Complex64", Val: Article{Complex64: complex64(1)}},
-			{Field: "Complex128", Val: Article{Complex128: complex128(1)}},
-			{Field: "Bool", Val: Article{Bool: true}},
-			{Field: "String", Val: Article{String: "ok"}},
-			{Field: "Array", Val: Article{Array: [1]int{100}}},
-			{Field: "Slice", Val: Article{Slice: []int{100}}},
-			{Field: "Map", Val: Article{Map: map[int]string{1: "ok"}}},
-			{Field: "Chan", Val: Article{Chan: make(chan int)}},
-			{Field: "Struct", Val: Article{Struct: time.Now()}},
-			{Field: "Func", Val: Article{Func: func() string { return "ok" }}},
-			{Field: "Interface", Val: Article{Interface: "ok"}},
-		}
+			result := filter.IsValid(Article{Int: math.MinInt})
+			g.Assert(result).IsTrue()
+		})
 
-		for _, item := range nonEmptyValues {
-			item := item // (!) save the context
+		// ...
 
-			g.It("success if given a non-zero "+item.Field, func() {
-				filter := Filter{
-					{
-						Field: item.Field,
-						Check: NON_ZERO,
-					},
-				}
+		g.It("success when given a non-zero uint8 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint8",
+					Check: NON_ZERO,
+				},
+			}
 
-				hints := filter.Validate(item.Val)
-				g.Assert(len(hints)).Equal(0, hints)
-			})
-		}
+			result := filter.IsValid(Article{Uint8: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero uint16 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint16",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint16: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero uint32 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint32",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint32: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero uint64 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint64: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero uint value", func() {
+			filter := Filter{
+				{
+					Field: "Uint",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		// ...
+
+		g.It("success when given a non-zero float32 value", func() {
+			filter := Filter{
+				{
+					Field: "Float32",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Float32: math.MaxFloat32})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero float64 value", func() {
+			filter := Filter{
+				{
+					Field: "Float64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Float64: math.MaxFloat64})
+			g.Assert(result).IsTrue()
+		})
+
+		// ...
+
+		g.It("success when given a non-zero complex64 value", func() {
+			filter := Filter{
+				{
+					Field: "Complex64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Complex64: -1})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero complex128 value", func() {
+			filter := Filter{
+				{
+					Field: "Complex128",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Complex128: 1})
+			g.Assert(result).IsTrue()
+		})
+
+		// ...
+
+		g.It("success when given a non-zero boolean value", func() {
+			filter := Filter{
+				{
+					Field: "Bool",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Bool: true})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero string value", func() {
+			filter := Filter{
+				{
+					Field: "String",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{String: "ok"})
+			g.Assert(result).IsTrue()
+		})
+
+		g.It("success when given a non-zero struct value", func() {
+			filter := Filter{
+				{
+					Field: "Struct",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Struct: time.Now()})
+			g.Assert(result).IsTrue()
+		})
 
 		// failure
 
-		emptyValues := []TestItem{
-			{Field: "Int8", Val: Article{Int8: *new(int8)}},
-			{Field: "Int16", Val: Article{Int16: *new(int16)}},
-			{Field: "Int32", Val: Article{Int32: *new(int32)}},
-			{Field: "Int64", Val: Article{Int64: *new(int64)}},
-			{Field: "Int", Val: Article{Int: *new(int)}},
-			{Field: "Uint8", Val: Article{Uint8: *new(uint8)}},
-			{Field: "Uint16", Val: Article{Uint16: *new(uint16)}},
-			{Field: "Uint32", Val: Article{Uint32: *new(uint32)}},
-			{Field: "Uint64", Val: Article{Uint64: *new(uint64)}},
-			{Field: "Uint", Val: Article{Uint: *new(uint)}},
-			{Field: "Float32", Val: Article{Float32: *new(float32)}},
-			{Field: "Float64", Val: Article{Float64: *new(float64)}},
-			{Field: "Complex64", Val: Article{Complex64: *new(complex64)}},
-			{Field: "Complex128", Val: Article{Complex128: *new(complex128)}},
-			{Field: "Bool", Val: Article{Bool: *new(bool)}},
-			{Field: "String", Val: Article{String: *new(string)}},
-			{Field: "Array", Val: Article{Array: *new([1]int)}},
-			{Field: "Slice", Val: Article{Slice: *new([]int)}},
-			{Field: "Map", Val: Article{Map: *new(map[int]string)}},
-			{Field: "Chan", Val: Article{Chan: *new(chan int)}},
-			{Field: "Struct", Val: Article{Struct: *new(time.Time)}},
-			{Field: "Func", Val: Article{Func: *new(func() string)}},
-			{Field: "Interface", Val: Article{Interface: *new(interface{})}},
-		}
+		g.It("failure when given a zero int8 value", func() {
+			filter := Filter{
+				{
+					Field: "Int8",
+					Check: NON_ZERO,
+				},
+			}
 
-		for _, item := range emptyValues {
-			item := item // (!) save the context
+			result := filter.IsValid(Article{Int8: *new(int8)})
+			g.Assert(result).IsFalse()
+		})
 
-			g.It("failure if given a zero "+item.Field, func() {
-				filter := Filter{
-					{
-						Field: item.Field,
-						Check: NON_ZERO,
-					},
-				}
+		g.It("failure when given a zero int16 value", func() {
+			filter := Filter{
+				{
+					Field: "Int16",
+					Check: NON_ZERO,
+				},
+			}
 
-				hints := filter.Validate(item.Val)
-				expectMsg := item.Field + " " + MsgEmpty
+			result := filter.IsValid(Article{Int16: *new(int16)})
+			g.Assert(result).IsFalse()
+		})
 
-				g.Assert(len(hints)).Equal(1, hints)
-				g.Assert(hints[0]).Equal(expectMsg)
-			})
-		}
+		g.It("failure when given a zero int32 value", func() {
+			filter := Filter{
+				{
+					Field: "Int32",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Int32: *new(int32)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero int64 value", func() {
+			filter := Filter{
+				{
+					Field: "Int64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Int64: *new(int64)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero int value", func() {
+			filter := Filter{
+				{
+					Field: "Int",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Int: *new(int)})
+			g.Assert(result).IsFalse()
+		})
+
+		// ...
+
+		g.It("failure when given a zero uint8 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint8",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint8: *new(uint8)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero uint16 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint16",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint16: *new(uint16)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero uint32 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint32",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint32: *new(uint32)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero uint64 value", func() {
+			filter := Filter{
+				{
+					Field: "Uint64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint64: *new(uint64)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero uint value", func() {
+			filter := Filter{
+				{
+					Field: "Uint",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Uint: *new(uint)})
+			g.Assert(result).IsFalse()
+		})
+
+		// ...
+
+		g.It("failure when given a zero float32 value", func() {
+			filter := Filter{
+				{
+					Field: "Float32",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Float32: *new(float32)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero float64 value", func() {
+			filter := Filter{
+				{
+					Field: "Float64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Float64: *new(float64)})
+			g.Assert(result).IsFalse()
+		})
+
+		// ...
+
+		g.It("failure when given a zero complex64 value", func() {
+			filter := Filter{
+				{
+					Field: "Complex64",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Complex64: *new(complex64)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero complex128 value", func() {
+			filter := Filter{
+				{
+					Field: "Complex128",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Complex128: *new(complex128)})
+			g.Assert(result).IsFalse()
+		})
+
+		// ...
+
+		g.It("failure when given a zero boolean value", func() {
+			filter := Filter{
+				{
+					Field: "Bool",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Bool: *new(bool)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero string value", func() {
+			filter := Filter{
+				{
+					Field: "String",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{String: *new(string)})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given a zero struct value", func() {
+			filter := Filter{
+				{
+					Field: "Struct",
+					Check: NON_ZERO,
+				},
+			}
+
+			result := filter.IsValid(Article{Struct: *new(time.Time)})
+			g.Assert(result).IsFalse()
+		})
 	})
 }
 
-// go test -v -run TestValidateFieldsMod .
+// go test -v -run TestIsValidFieldsMod .
 
-func TestValidateFieldsMod(t *testing.T) {
+func TestIsValidFieldsMod(t *testing.T) {
 	type Article struct {
 		Id        uint16 `json:"id"`
 		Status    uint8  `json:"status"`
@@ -6755,7 +6900,7 @@ func TestValidateFieldsMod(t *testing.T) {
 
 	g := Goblin(t)
 
-	g.Describe(`Modifier "fields"`, func() {
+	g.Describe(`Rule "fields:min"`, func() {
 		g.It("success when passing required fields", func() {
 			filter := Filter{
 				{
@@ -6779,14 +6924,14 @@ func TestValidateFieldsMod(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{
+			result := filter.IsValid(Article{
 				Id:        10,
 				Status:    5,
 				FirstName: "John",
 				LastName:  "Doe",
 			})
 
-			g.Assert(len(hints)).Equal(0, hints)
+			g.Assert(result).IsTrue(result)
 		})
 
 		g.It("failure when missing required fields", func() {
@@ -6812,14 +6957,8 @@ func TestValidateFieldsMod(t *testing.T) {
 				},
 			}
 
-			hints := filter.Validate(Article{})
-
-			g.Assert(len(hints)).Equal(5, hints)
-			g.Assert(hints[0]).Equal("id is empty")
-			g.Assert(hints[1]).Equal("status must be in the range 1..5")
-			g.Assert(hints[2]).Equal("firstName must contain 3..15 characters")
-			g.Assert(hints[3]).Equal("lastName must contain 3..15 characters")
-			g.Assert(hints[4]).Equal("invalid body value")
+			result := filter.IsValid(Article{})
+			g.Assert(result).IsFalse()
 		})
 	})
 }

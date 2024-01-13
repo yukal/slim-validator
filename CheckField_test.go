@@ -49,5 +49,51 @@ func TestCheckField(t *testing.T) {
 				g.Assert(hint).Equal(MsgNotValid, hint)
 			})
 		})
+
+		g.Describe(`validator.Range`, func() {
+			g.It("return empty hint", func() {
+				rules := reflect.ValueOf(Range{1, 25})
+				value := reflect.ValueOf(25)
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("", hint)
+			})
+
+			g.It("return filled hint", func() {
+				rules := reflect.ValueOf(Range{1, 25})
+				value := reflect.ValueOf(30)
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("must be in the range 1..25", hint)
+			})
+		})
+
+		g.Describe(`validator.Group`, func() {
+			g.It("return empty hint", func() {
+				rules := reflect.ValueOf(Group{
+					Rule{"min", 1},
+					Rule{"each:match", `^\+38\d{10}$`},
+				})
+
+				value := reflect.ValueOf([]string{
+					"+380001234567",
+					"+380007654321",
+				})
+
+				hint := checkField(rules, value)
+				g.Assert(hint).Equal("", hint)
+			})
+
+			g.It("return filled hint", func() {
+				rules := reflect.ValueOf(Group{
+					Rule{"min", 1},
+				})
+
+				value := reflect.ValueOf([]string{})
+				hint := checkField(rules, value)
+
+				g.Assert(hint).Equal("must contain at least 1 items", hint)
+			})
+		})
 	})
 }
