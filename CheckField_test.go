@@ -72,7 +72,7 @@ func TestCheckField(t *testing.T) {
 			g.It("return empty hint", func() {
 				rules := reflect.ValueOf(Group{
 					Rule{"min", 1},
-					Rule{"eachMatch", `^\+38\d{10}$`},
+					Rule{"each:match", `^\+38\d{10}$`},
 				})
 
 				value := reflect.ValueOf([]string{

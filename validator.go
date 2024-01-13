@@ -201,16 +201,6 @@ func compare(action string, proto, value reflect.Value) string {
 	case "each:range", "each:min", "each:max", "each:eq", "each:match":
 		return filterEach(action[5:], proto, value)
 
-	// deprecated
-	case "eachMatch":
-		if (proto.Kind() != reflect.String) || (proto.Len() == 0) {
-			return MsgInvalidRule
-		}
-
-		if !IsEachMatch(proto.String(), value) {
-			return MsgNotValid
-		}
-
 	case "year":
 		if !IsYearEqual(proto.Interface(), value.Interface()) {
 			return fmt.Sprintf(MsgEq, proto.Interface())
@@ -368,37 +358,4 @@ func IsMatch(reg, value reflect.Value) (flag bool) {
 	}
 
 	return
-}
-
-func IsEachMatch(reg string, value reflect.Value) bool {
-	isValid := false
-
-	switch value.Kind() {
-	case reflect.Array, reflect.Slice:
-		if isValid = value.Type().Elem().Kind() == reflect.String; !isValid {
-			return false
-		}
-
-		for n := 0; n < value.Len(); n++ {
-			matched, _ := regexp.MatchString(reg, value.Index(n).String())
-			isValid = isValid && matched
-		}
-
-	case reflect.Map:
-		if isValid = value.Type().Elem().Kind() == reflect.String; !isValid {
-			return false
-		}
-
-		iter := value.MapRange()
-
-		for iter.Next() {
-			// k := iter.Key()
-			// v := iter.Value()
-
-			matched, _ := regexp.MatchString(reg, iter.Value().String())
-			isValid = isValid && matched
-		}
-	}
-
-	return isValid
 }

@@ -43,7 +43,7 @@ filter := validator.Filter{
       // images must contain up to 3 items
       validator.Rule{"max", 3},
 
-      validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
+      validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
     },
   },
   {
@@ -107,7 +107,7 @@ Check whether any element of a collection matches a regular expression. This rul
 ```go
 {
   Field: "Images",
-  Check: validator.Rule{"eachMatch", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
+  Check: validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
 }
 ```
 
