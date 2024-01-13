@@ -3,7 +3,37 @@ A simple validation package for Go
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/yukal/slim-validator.svg)](https://pkg.go.dev/github.com/yukal/slim-validator)
 
+## Install
+```bash
+# get latest version
+go get github.com/yukal/slim-validator
+
+# get a specific version
+go get github.com/yukal/slim-validator@v0.12.0
+```
+
+Import then:
+
+```bash
+# import using alias
+import validator "github.com/yukal/slim-validator"
+
+# import using parentheses
+import (
+  validator "github.com/yukal/slim-validator"
+)
+
+# import using a context
+# In that case, you will be able to use the validator directly without any aliasing.
+# Then call IsValid() and Validate() directly.
+import (
+  . "github.com/yukal/slim-validator"
+)
+```
+
 ## Usage
+
+The two methods you will need for validation are the `IsValid()` and the `Validate()`. See a detailed example below
 
 ```go
 type Article struct {
@@ -18,7 +48,8 @@ type Article struct {
 filter := validator.Filter{
   {
     Field: "Id",
-    Check: validator.NON_ZERO,
+    // id must be at least 1
+    Check: validator.Rule{"min", 1},
   },
   {
     Field: "Sex",
@@ -33,18 +64,13 @@ filter := validator.Filter{
   {
     Field: "Phone",
     Check: validator.Rule{"match", `^\+38\d{10}$`},
+
+    // will not validate if the value is not passed
+    Optional: true,
   },
   {
     Field: "Images",
-    Check: validator.Group{
-      // images must contain at least 2 items
-      validator.Rule{"min", 2},
-
-      // images must contain up to 3 items
-      validator.Rule{"max", 3},
-
-      validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
-    },
+    Check: validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
   },
   {
     Field: "Date",
@@ -65,6 +91,12 @@ article := Article{
   Date: time.Now(),
 }
 
+// returns bool
+if !filter.Valid(article) {
+  fmt.Println("article is not valid!")
+}
+
+// returns error hints
 hints := filter.Validate(article)
 
 for _, hint := range hints {
@@ -73,7 +105,7 @@ for _, hint := range hints {
 ```
 
 ## Validation Rules
-#### NON_ZERO
+### NON_ZERO
 
 Checks the passed value for [non-zero](https://go.dev/ref/spec#The_zero_value) [ [1](https://pkg.go.dev/reflect#Value.IsZero) ] [ [2](https://golangbyexample.com/go-default-zero-value-all-types/) ].
 The types that this rule works with are:
@@ -88,7 +120,7 @@ The types that this rule works with are:
 }
 ```
 
-#### Match
+### Match
 
 Checks if the passed value matches the regular expression.
 This rule only works with **string**
@@ -100,18 +132,7 @@ This rule only works with **string**
 }
 ```
 
-#### Each Match
-
-Check whether any element of a collection matches a regular expression. This rule works with: **array**, **slice**, and **map** that contain string values
-
-```go
-{
-  Field: "Images",
-  Check: validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
-}
-```
-
-#### Min
+### Min
 
 Compares the compliance between the prototype and value, the value must correspond to the specified prototype within the minimum threshold. The types that this rule works with are:
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
@@ -146,7 +167,7 @@ When working with **string** values, the minimum length (according to the specif
 }
 ```
 
-#### Max
+### Max
 
 Compares the compliance between the prototype and value, the value must correspond to the specified prototype within the maximum threshold. The types that this rule works with are:
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
@@ -181,7 +202,7 @@ When working with **string** values, the maximum length (according to the specif
 }
 ```
 
-#### Equal
+### Equal
 
 Compares the compliance between the prototype and value, the value must exactly equal the specified prototype. The types that this rule works with are:
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
@@ -214,7 +235,7 @@ When working with **string** values, the validator will check if the length is e
 }
 ```
 
-#### Range
+### Range
 
 Compares the compliance between the prototype and the value, the value must match the specified range between the minimum and maximum threshold. The types that this rule works with are:
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
@@ -247,7 +268,7 @@ When working with **string** values, the validator will check whether the length
 }
 ```
 
-#### Year
+### Year
 
 Compares the compliance between the prototype and the value, the value must match the specified year. This rule only works with **[time.Time](https://pkg.go.dev/time)**
 
@@ -256,5 +277,33 @@ Compares the compliance between the prototype and the value, the value must matc
 {
   Field: "Date",
   Check: validator.Rule{"year", 2024},
+}
+```
+
+## Validation Modifiers
+
+The modifiers works in conjunction with the validation rules mentioned above in this document
+
+### Each
+
+The "each" modifier checks the correspondence between the prototype and each element of the **array**, **slice**, or **map**. Thus, each element will be checked according to the defined threshold rule
+
+```go
+validator.Rule{"each:min", 16},
+validator.Rule{"each:max", 128},
+validator.Rule{"each:eq", 0},
+validator.Rule{"each:range", []int{5, 10}},
+validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
+```
+
+### Fields
+
+The "fields" modifier checks the equality between the threshold rule and the number of successfully validated fields. This modifier must be placed last of the specified validator rules. Otherwise, an incorrect result will be returned. Please note, that this modifier should be placed without the "Optional" and the "Field" parameters, as it runs after validating the struct fields
+
+```go
+{
+  // Must contain at least one valid field after validation, 
+  // otherwise the validator will return "invalid body value"
+  Check: validator.Rule{"fields:min", 1},
 }
 ```
