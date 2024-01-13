@@ -46,12 +46,15 @@ type FilterItem struct {
 
 type Filter []FilterItem
 
-// data should be a type of struct{ ... }
+// Checks the fields of the structure according to the specified rules.
+// Returns false or true, respectively
 func (filter Filter) IsValid(data any) bool {
 	return len(filter.Validate(data)) == 0
 }
 
-// data should be a type of struct{ ... }
+// Checks the fields of the structure according to the specified rules.
+// Returns a slice with error hints if at least one field is not valid,
+// otherwise, it will return an empty slice
 func (filter Filter) Validate(data any) []string {
 	refValData := reflect.Indirect(reflect.ValueOf(data))
 	refTypData := refValData.Type()
