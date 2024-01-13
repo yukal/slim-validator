@@ -1,5 +1,5 @@
 <a name="v0.12.0"></a>
-## [v0.12.0](https://github.com/yukal/slim-validator/compare/a48cbfa6d9d8f0d3453135c796f9fa1b57113567...3e0681f5dc107ac4cb6eee0b361b8889e649ed11) (2024-01-12)
+## [v0.12.0](https://github.com/yukal/slim-validator/compare/a48cbfa6d9d8f0d3453135c796f9fa1b57113567...3e0681f5dc107ac4cb6eee0b361b8889e649ed11) – 2024-01-12
 
 ### New Features
 
@@ -25,7 +25,7 @@
 
 
 <a name="v0.9.0"></a>
-## [v0.9.0](https://github.com/yukal/slim-validator/compare/e9cfce77ac2b142526144be7112a62bdbff18483...a08098150df4149189ad564d4740c844d971ed47) - 2024-01-11
+## [v0.9.0](https://github.com/yukal/slim-validator/compare/e9cfce77ac2b142526144be7112a62bdbff18483...a08098150df4149189ad564d4740c844d971ed47) – 2024-01-11
 
 ### New Features
 
@@ -64,7 +64,7 @@
 
 
 <a name="v0.3.0"></a>
-## [v0.3.0](https://github.com/yukal/slim-validator/compare/4494ca40ce14d41e7c4ca778e2979df86150e9ba...e9cfce77ac2b142526144be7112a62bdbff18483) - 2024-01-10
+## [v0.3.0](https://github.com/yukal/slim-validator/compare/4494ca40ce14d41e7c4ca778e2979df86150e9ba...e9cfce77ac2b142526144be7112a62bdbff18483) – 2024-01-10
 
 ### New Features
 - **core:**  validate non-zero ([3645545e](https://github.com/yukal/slim-validator/commit/3645545e09f34e7ca9915ea35556a3cd45393751))
@@ -94,7 +94,7 @@
 
 
 <a name="v0.0.0"></a>
-## [v0.0.0](https://github.com/yukal/slim-validator/compare/87e27661ecc321bc6b45ec477d1cb5c80f63fbfd...4494ca40ce14d41e7c4ca778e2979df86150e9ba) - 2024-01-09
+## [v0.0.0](https://github.com/yukal/slim-validator/compare/87e27661ecc321bc6b45ec477d1cb5c80f63fbfd...4494ca40ce14d41e7c4ca778e2979df86150e9ba) – 2024-01-09
 
 ### Chore
 
