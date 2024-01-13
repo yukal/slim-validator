@@ -193,7 +193,7 @@ func compare(action string, proto, value reflect.Value) string {
 		return filterEq(proto, value)
 
 	case "match":
-		if !IsMatch(proto, value) {
+		if !filterMatch(proto, value) {
 			return MsgNotValid
 		}
 
@@ -352,7 +352,7 @@ func filterEach(action string, proto, value reflect.Value) string {
 	return MsgUnsupportType
 }
 
-func IsMatch(reg, value reflect.Value) (flag bool) {
+func filterMatch(reg, value reflect.Value) (flag bool) {
 	if reg.Kind() == reflect.String && value.Kind() == reflect.String {
 		flag, _ = regexp.MatchString(reg.String(), value.String())
 	}

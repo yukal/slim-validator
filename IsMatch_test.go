@@ -8,14 +8,14 @@ import (
 )
 
 // go test -v -cover .
-// go test -v -cover -run TestIsMatch .
+// go test -v -cover -run TestFilterMatch .
 
-func TestIsMatch(t *testing.T) {
+func TestFilterMatch(t *testing.T) {
 	g := Goblin(t)
 
-	g.Describe("IsMatch", func() {
+	g.Describe(`filter "match"`, func() {
 		g.It("success when value match the mask", func() {
-			result := IsMatch(
+			result := filterMatch(
 				reflect.ValueOf(`(?i)^[0-9a-f]{32}$`),
 				reflect.ValueOf("b0fb0c19711bcf3b73f41c909f66bded"),
 			)
@@ -24,7 +24,7 @@ func TestIsMatch(t *testing.T) {
 		})
 
 		g.It("success when given an empty mask", func() {
-			result := IsMatch(
+			result := filterMatch(
 				reflect.ValueOf(""),
 				reflect.ValueOf("abra"),
 			)
@@ -33,7 +33,7 @@ func TestIsMatch(t *testing.T) {
 		})
 
 		g.It("failure when a value does not match the mask", func() {
-			result := IsMatch(
+			result := filterMatch(
 				reflect.ValueOf(`(?i)^[0-9a-f]{32}$`),
 				reflect.ValueOf("Z0fz0c19711bcf3b73f41c909f66bded"),
 			)
@@ -42,7 +42,7 @@ func TestIsMatch(t *testing.T) {
 		})
 
 		g.It("failure when given invalid mask", func() {
-			result := IsMatch(
+			result := filterMatch(
 				reflect.ValueOf(nil),
 				reflect.ValueOf("cadabra"),
 			)
@@ -51,7 +51,7 @@ func TestIsMatch(t *testing.T) {
 		})
 
 		g.It("failure when given invalid value", func() {
-			result := IsMatch(
+			result := filterMatch(
 				reflect.ValueOf(`(?i)^[0-9a-f]{32}$`),
 				reflect.ValueOf(nil),
 			)
