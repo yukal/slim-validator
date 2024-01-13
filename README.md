@@ -25,7 +25,6 @@ import (
 
 # import using a context
 # In that case, you will be able to use the validator directly without any aliasing.
-# Then call IsValid() and Validate() directly.
 import (
   . "github.com/yukal/slim-validator"
 )
