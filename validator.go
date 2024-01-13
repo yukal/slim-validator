@@ -193,9 +193,7 @@ func compare(action string, proto, value reflect.Value) string {
 		return filterEq(proto, value)
 
 	case "match":
-		if !filterMatch(proto, value) {
-			return MsgNotValid
-		}
+		return filterMatch(proto, value)
 
 	// modifiers
 	case "each:range", "each:min", "each:max", "each:eq", "each:match":
@@ -352,10 +350,16 @@ func filterEach(action string, proto, value reflect.Value) string {
 	return MsgUnsupportType
 }
 
-func filterMatch(reg, value reflect.Value) (flag bool) {
-	if reg.Kind() == reflect.String && value.Kind() == reflect.String {
-		flag, _ = regexp.MatchString(reg.String(), value.String())
+func filterMatch(reg, value reflect.Value) string {
+	match, err := regexp.MatchString(reg.String(), value.String())
+
+	switch {
+	case err != nil:
+		return MsgInvalidRule
+
+	case !match:
+		return MsgNotValid
 	}
 
-	return
+	return ""
 }
