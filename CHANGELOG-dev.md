@@ -1,4 +1,23 @@
 <a name="v0.12.0"></a>
+## [v0.12.0](https://github.com/yukal/slim-validator/compare/3e0681f5dc107ac4cb6eee0b361b8889e649ed11...719673093ca141fadcd9ec18115b0673fba00f46) – 2024-01-13
+
+### Refactors
+
+- **filter-match:**  update logic and tests ([3220500e](https://github.com/yukal/slim-validator/commit/3220500e53e12141fab4bc8202efd828f7cea8e5))
+- **filter-match:**  rename IsMatch method ([bc4392c0](https://github.com/yukal/slim-validator/commit/bc4392c0f7931fc750f31eedb1a964f164edb79c))
+- **each-match:**  remove deprecated eachMatch ([d32baff5](https://github.com/yukal/slim-validator/commit/d32baff5fa80a3dc3e2dd399fccb01f43d096bba))
+
+### Chores
+
+- **core:**  improve descriptions ([b018153e](https://github.com/yukal/slim-validator/commit/b018153e50b065e92315e89734b2e3f69bc5b8d0))
+- **changelog:**  improve changelog reading style ([50a7b554](https://github.com/yukal/slim-validator/commit/50a7b55415c633c8e4eed4638530a39e626cbe2d))
+
+### Docs
+
+- **readme:**  improve readme ([71967309](https://github.com/yukal/slim-validator/commit/719673093ca141fadcd9ec18115b0673fba00f46))
+
+
+<a name="v0.12.0"></a>
 ## [v0.12.0](https://github.com/yukal/slim-validator/compare/a48cbfa6d9d8f0d3453135c796f9fa1b57113567...3e0681f5dc107ac4cb6eee0b361b8889e649ed11) – 2024-01-12
 
 ### New Features
