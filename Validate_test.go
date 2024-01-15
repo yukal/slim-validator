@@ -1,7 +1,9 @@
 package validator
 
 import (
+	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -1249,6 +1251,1096 @@ func TestValidateYear(t *testing.T) {
 
 			g.Assert(len(hints)).Equal(1, hints)
 			g.Assert(hints[0]).Equal("date must be exactly 2024")
+		})
+	})
+}
+
+// go test -v -run TestValidateDate .
+
+func TestValidateDate(t *testing.T) {
+	type Article struct {
+		Date time.Time `json:"date"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "date:min"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("date "+MsgMin, now.UTC().Format(time.RFC3339))
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now.Unix()},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+				expectHint := "date " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "date " + MsgUnsupportType
+			expectMsgInvalidRule := "date " + MsgInvalidRule
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+		})
+	})
+
+	g.Describe(`Rule "date:max"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("date "+MsgMax, now.UTC().Format(time.RFC3339))
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now.Unix()},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+				expectHint := "date " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "date " + MsgUnsupportType
+			expectMsgInvalidRule := "date " + MsgInvalidRule
+
+			g.It("success when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+		})
+	})
+
+	g.Describe(`Rule "date:eq"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("date "+MsgEq, now.UTC().Format(time.RFC3339))
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now.Unix()},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+				expectHint := "date " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Date: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "date " + MsgUnsupportType
+			expectMsgInvalidRule := "date " + MsgInvalidRule
+
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Date: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+		})
+	})
+}
+
+// go test -v -run TestValidateTime .
+
+func TestValidateTime(t *testing.T) {
+	type Article struct {
+		Time time.Time `json:"time"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "time:min"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("time "+MsgMin, now.UnixNano())
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:min", now.UnixNano()},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:min", strconv.FormatInt(now.UnixNano(), 10)},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:min", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+				expectHint := "time " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:min", now},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "time " + MsgUnsupportType
+			expectMsgInvalidRule := "time " + MsgInvalidRule
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:min", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:min", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:min", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Time []int `json:"time"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:min", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+		})
+	})
+
+	g.Describe(`Rule "time:max"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("time "+MsgMax, now.UnixNano())
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:max", now.UnixNano()},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:max", strconv.FormatInt(now.UnixNano(), 10)},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:max", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+				expectHint := "time " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:max", now},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "time " + MsgUnsupportType
+			expectMsgInvalidRule := "time " + MsgInvalidRule
+
+			g.It("success when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:max", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:max", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:max", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Time []int `json:"time"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:max", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+		})
+	})
+
+	g.Describe(`Rule "time:eq"`, func() {
+		now := time.Now()
+		expectHint := fmt.Sprintf("time "+MsgEq, now.UnixNano())
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:eq", now.UnixNano()},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:eq", strconv.FormatInt(now.UnixNano(), 10)},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:eq", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+				expectHint := "time " + MsgInvalidRule
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Time",
+					Check: Rule{"time:eq", now},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				hints := filter.Validate(Article{Time: now})
+				g.Assert(len(hints)).Equal(0, hints)
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(-time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				hints := filter.Validate(Article{
+					Time: now.Add(time.Second),
+				})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			expectMsgUnsupportType := "time " + MsgUnsupportType
+			expectMsgInvalidRule := "time " + MsgInvalidRule
+
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:eq", now},
+					},
+				}
+
+				hints := filter.Validate(Article{})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectHint)
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:eq", nil},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgInvalidRule)
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:eq", []int{}},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: now})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Time []int `json:"time"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Time",
+						Check: Rule{"time:eq", now},
+					},
+				}
+
+				hints := filter.Validate(Article{Time: []int{}})
+
+				g.Assert(len(hints)).Equal(1, hints)
+				g.Assert(hints[0]).Equal(expectMsgUnsupportType)
+			})
 		})
 	})
 }

@@ -4,24 +4,26 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
+	"time"
 	"unicode/utf8"
 )
 
 const (
 	NON_ZERO = "NonZero"
 
-	MsgMinStrLen      = "must contain at least %d characters"
-	MsgMaxStrLen      = "must contain up to %d characters"
-	MsgEqStrLen       = "must contain exactly %d characters"
-	MsgRangeStrLen    = "must contain %d..%d characters"
-	MsgMinSetLen      = "must contain at least %d items"
-	MsgMaxSetLen      = "must contain up to %d items"
-	MsgEqSetLen       = "must contain exactly %d items"
-	MsgRangeSetLen    = "must contain %d..%d items"
-	MsgMin            = "must be at least %d"
-	MsgMax            = "must be up to %d"
-	MsgEq             = "must be exactly %d"
-	MsgRange          = "must be in the range %d..%d"
+	MsgMinStrLen      = "must contain at least %v characters"
+	MsgMaxStrLen      = "must contain up to %v characters"
+	MsgEqStrLen       = "must contain exactly %v characters"
+	MsgRangeStrLen    = "must contain %v..%v characters"
+	MsgMinSetLen      = "must contain at least %v items"
+	MsgMaxSetLen      = "must contain up to %v items"
+	MsgEqSetLen       = "must contain exactly %v items"
+	MsgRangeSetLen    = "must contain %v..%v items"
+	MsgMin            = "must be at least %v"
+	MsgMax            = "must be up to %v"
+	MsgEq             = "must be exactly %v"
+	MsgRange          = "must be in the range %v..%v"
 	MsgNotValid       = "is not valid"
 	MsgEmpty          = "is empty"
 	MsgUnsupportType  = "has unsupported type to validate"
@@ -202,6 +204,12 @@ func compare(action string, proto, value reflect.Value) string {
 	case "each:range", "each:min", "each:max", "each:eq", "each:match":
 		return filterEach(action[5:], proto, value)
 
+	case "date:min", "date:max", "date:eq":
+		return filterDate(action[5:], proto, value)
+
+	case "time:min", "time:max", "time:eq":
+		return filterTime(action[5:], proto, value)
+
 	case "year":
 		if !IsYearEqual(proto.Interface(), value.Interface()) {
 			return fmt.Sprintf(MsgEq, proto.Interface())
@@ -351,6 +359,118 @@ func filterEach(action string, proto, value reflect.Value) string {
 	}
 
 	return MsgUnsupportType
+}
+
+func filterDate(action string, proto, value reflect.Value) string {
+	var tmProto, tmValue int64
+
+	if proto.Equal(refNil) {
+		return MsgInvalidRule
+	}
+
+	if value.Equal(refNil) {
+		return MsgInvalidValue
+	}
+
+	switch proto.Type().String() + ":" + value.Type().String() {
+	case "int64:time.Time":
+		tmProto = proto.Int()
+		tmValue = value.Interface().(time.Time).Unix()
+
+	case "time.Time:time.Time":
+		tmProto = proto.Interface().(time.Time).Unix()
+		tmValue = value.Interface().(time.Time).Unix()
+
+	case "string:time.Time":
+		t, err := time.Parse(time.RFC3339, proto.String())
+		if err != nil {
+			return MsgInvalidRule
+		}
+
+		tmProto = t.Unix()
+		tmValue = value.Interface().(time.Time).Unix()
+
+	default:
+		return MsgUnsupportType
+	}
+
+	switch action {
+	case "min":
+		if tmValue < tmProto {
+			return fmt.Sprintf(MsgMin, time.Unix(tmProto, 0).UTC().Format(time.RFC3339))
+		}
+
+	case "max":
+		if tmValue > tmProto {
+			return fmt.Sprintf(MsgMax, time.Unix(tmProto, 0).UTC().Format(time.RFC3339))
+		}
+
+	case "eq":
+		if tmValue != tmProto {
+			return fmt.Sprintf(MsgEq, time.Unix(tmProto, 0).UTC().Format(time.RFC3339))
+		}
+
+	default:
+		return MsgInvalidRule
+	}
+
+	return ""
+}
+
+func filterTime(action string, proto, value reflect.Value) string {
+	var tmProto, tmValue int64
+	var err error
+
+	if proto.Equal(refNil) {
+		return MsgInvalidRule
+	}
+
+	if value.Equal(refNil) {
+		return MsgInvalidValue
+	}
+
+	switch proto.Type().String() + ":" + value.Type().String() {
+	case "int64:time.Time":
+		tmProto = proto.Int()
+		tmValue = value.Interface().(time.Time).UnixNano()
+
+	case "time.Time:time.Time":
+		tmProto = proto.Interface().(time.Time).UnixNano()
+		tmValue = value.Interface().(time.Time).UnixNano()
+
+	case "string:time.Time":
+		tmValue = value.Interface().(time.Time).UnixNano()
+		tmProto, err = strconv.ParseInt(proto.String(), 10, 64)
+
+		if err != nil {
+			return MsgInvalidRule
+		}
+
+	default:
+		return MsgUnsupportType
+	}
+
+	switch action {
+	case "min":
+		if tmValue < tmProto {
+			return fmt.Sprintf(MsgMin, tmProto)
+		}
+
+	case "max":
+		if tmValue > tmProto {
+			return fmt.Sprintf(MsgMax, tmProto)
+		}
+
+	case "eq":
+		if tmValue != tmProto {
+			return fmt.Sprintf(MsgEq, tmProto)
+		}
+
+	default:
+		return MsgInvalidRule
+	}
+
+	return ""
 }
 
 func filterMatch(reg, value reflect.Value) string {
