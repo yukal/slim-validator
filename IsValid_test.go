@@ -1203,6 +1203,484 @@ func TestIsValidYear(t *testing.T) {
 	})
 }
 
+// go test -v -run TestIsValidDate .
+
+func TestIsValidDate(t *testing.T) {
+	type Article struct {
+		Date time.Time `json:"date"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Rule "date:min"`, func() {
+		now := time.Now()
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now.Unix()},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:min", now},
+				},
+			}
+
+			g.It("success when the value exceeds the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the min threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the min threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", nil},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", now},
+					},
+				}
+
+				success := filter.IsValid(Article{})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", []int{}},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:min", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: []int{}})
+				g.Assert(success).IsFalse()
+			})
+		})
+	})
+
+	g.Describe(`Rule "date:max"`, func() {
+		now := time.Now()
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now.Unix()},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:max", now},
+				},
+			}
+
+			g.It("success when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			g.It("success when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", now},
+					},
+				}
+
+				success := filter.IsValid(Article{})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", nil},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", []int{}},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:max", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: []int{}})
+				g.Assert(success).IsFalse()
+			})
+		})
+	})
+
+	g.Describe(`Rule "date:eq"`, func() {
+		now := time.Now()
+
+		g.Describe(`compute within int64 & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now.Unix()},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within string & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now.Format(time.RFC3339)},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", "buka-ka-ka-buku-ku"},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within time.Time & time.Time`, func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"date:eq", now},
+				},
+			}
+
+			g.It("success when the value reaches the max threshold", func() {
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsTrue()
+			})
+
+			g.It("failure when the value is less than the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(-time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the value exceeds the max threshold", func() {
+				success := filter.IsValid(Article{
+					Date: now.Add(time.Second),
+				})
+				g.Assert(success).IsFalse()
+			})
+		})
+
+		g.Describe(`compute within unsupported types`, func() {
+			g.It("failure when the given an empty value", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", now},
+					},
+				}
+
+				success := filter.IsValid(Article{})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given an empty proto", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", nil},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given proto has unsupported type", func() {
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", []int{}},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: now})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when the given value has unsupported type", func() {
+				type Article struct {
+					Date []int `json:"date"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Date",
+						Check: Rule{"date:eq", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Date: []int{}})
+				g.Assert(success).IsFalse()
+			})
+		})
+	})
+}
+
 // go test -v -run TestIsValidMatch .
 
 func TestIsValidMatch(t *testing.T) {
