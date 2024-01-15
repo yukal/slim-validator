@@ -316,6 +316,24 @@ validator.Rule{"date:eq", "2024-01-01T15:04:05Z"},
 validator.Rule{"date:eq", "2024-01-01T15:04:05+02:00"},
 ```
 
+### Time
+
+The "time" modifier checks the correspondence between the prototype and the struct value with type [time.Time](https://pkg.go.dev/time#Time). In the context of this validator, the "time" modifier is intended to work with more precise time values, including comparisons of [nanoseconds](https://pkg.go.dev/time#Time.UnixNano). The prototype can be specified as a 64-bit string in nanoseconds, [int64](https://pkg.go.dev/time#Time.UnixNano) with nanoseconds, and [time](https://pkg.go.dev/time).
+
+```go
+// passing time as int64
+// following the rule "min", the time must be at least "now"
+validator.Rule{"time:min", time.Now().Unix()},
+
+// passing time as time.Time{}
+// following the rule "max", the time must be up to "now + 24 hours"
+validator.Rule{"time:max", time.Now().Add(time.Hour * 24)},
+
+// passing time as string
+// following the rule "eq", the time must be exactly "1705337534239050689"
+validator.Rule{"time:eq", "1705337534239050689"},
+```
+
 ### Fields
 
 The "fields" modifier checks the equality between the threshold rule and the number of successfully validated fields. This modifier must be placed last of the specified validator rules. Otherwise, an incorrect result will be returned. Please note, that this modifier should be placed without the "Optional" and the "Field" parameters, as it runs after validating the struct fields
