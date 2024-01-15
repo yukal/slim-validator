@@ -1,3 +1,25 @@
+## [v0.14.0](https://github.com/yukal/slim-validator/compare/dfdb22c433879ea3b12f5727f3c349148465d61c...656a76596b01860c61dc8213f35ff62a949117dc) – 2024-01-15
+
+### New Features
+
+- **core:**  validate time ([7c398586](https://github.com/yukal/slim-validator/commit/7c3985863f7a6d1a36926e755eb70d98572c2e53))
+- **core:**  validate date ([90c31cc7](https://github.com/yukal/slim-validator/commit/90c31cc7d942f3162de72885068fc9eba665d50e))
+
+### Refactors
+
+- **core:**  update constants ([f025490b](https://github.com/yukal/slim-validator/commit/f025490b5662601de5c0de7f7b354ceb0b5d6e79))
+
+### Tests
+
+- **core:**  modifier time ([656a7659](https://github.com/yukal/slim-validator/commit/656a76596b01860c61dc8213f35ff62a949117dc))
+- **core:**  modifier date ([6ad7a758](https://github.com/yukal/slim-validator/commit/6ad7a7584630f9ef5d4356dc391ade90d67ffe41))
+
+### Docs
+
+- **readme:**  the time modifier description ([032021ea](https://github.com/yukal/slim-validator/commit/032021ea62225bb1930e09866303a48bc66f7009))
+- **readme:**  the date modifier description ([320858e8](https://github.com/yukal/slim-validator/commit/320858e8db61b84f955d1ab731d87526c6d25465))
+
+
 ## [v0.12.0](https://github.com/yukal/slim-validator/compare/87e27661ecc321bc6b45ec477d1cb5c80f63fbfd...719673093ca141fadcd9ec18115b0673fba00f46) – 2024-01-13
 
 ### New Features
