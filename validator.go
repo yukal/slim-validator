@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strconv"
 	"time"
 	"unicode/utf8"
 )
@@ -206,6 +207,9 @@ func compare(action string, proto, value reflect.Value) string {
 	case "date:min", "date:max", "date:eq":
 		return filterDate(action[5:], proto, value)
 
+	case "time:min", "time:max", "time:eq":
+		return filterTime(action[5:], proto, value)
+
 	case "year":
 		if !IsYearEqual(proto.Interface(), value.Interface()) {
 			return fmt.Sprintf(MsgEq, proto.Interface())
@@ -404,6 +408,62 @@ func filterDate(action string, proto, value reflect.Value) string {
 	case "eq":
 		if tmValue != tmProto {
 			return fmt.Sprintf(MsgEq, time.Unix(tmProto, 0).UTC().Format(time.RFC3339))
+		}
+
+	default:
+		return MsgInvalidRule
+	}
+
+	return ""
+}
+
+func filterTime(action string, proto, value reflect.Value) string {
+	var tmProto, tmValue int64
+	var err error
+
+	if proto.Equal(refNil) {
+		return MsgInvalidRule
+	}
+
+	if value.Equal(refNil) {
+		return MsgInvalidValue
+	}
+
+	switch proto.Type().String() + ":" + value.Type().String() {
+	case "int64:time.Time":
+		tmProto = proto.Int()
+		tmValue = value.Interface().(time.Time).UnixNano()
+
+	case "time.Time:time.Time":
+		tmProto = proto.Interface().(time.Time).UnixNano()
+		tmValue = value.Interface().(time.Time).UnixNano()
+
+	case "string:time.Time":
+		tmValue = value.Interface().(time.Time).UnixNano()
+		tmProto, err = strconv.ParseInt(proto.String(), 10, 64)
+
+		if err != nil {
+			return MsgInvalidRule
+		}
+
+	default:
+		return MsgUnsupportType
+	}
+
+	switch action {
+	case "min":
+		if tmValue < tmProto {
+			return fmt.Sprintf(MsgMin, tmProto)
+		}
+
+	case "max":
+		if tmValue > tmProto {
+			return fmt.Sprintf(MsgMax, tmProto)
+		}
+
+	case "eq":
+		if tmValue != tmProto {
+			return fmt.Sprintf(MsgEq, tmProto)
 		}
 
 	default:
