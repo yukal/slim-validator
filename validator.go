@@ -165,10 +165,6 @@ func checkOthers(rules reflect.Value, successFields int) string {
 }
 
 func compare(action string, proto, value reflect.Value) string {
-	if !value.IsValid() {
-		return MsgInvalidValue
-	}
-
 	switch action {
 	case NON_ZERO:
 		if value.IsZero() {
