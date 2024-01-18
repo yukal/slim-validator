@@ -293,6 +293,9 @@ func filterMax(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgMaxSetLen, proto.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = fmt.Sprintf(MsgMax, proto.Interface())
 	}
