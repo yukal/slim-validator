@@ -241,6 +241,9 @@ func filterRange(proto, value reflect.Value) string {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		hint = fmt.Sprintf(MsgRange, valMin.Interface(), valMax.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = MsgUnsupportType
 	}
