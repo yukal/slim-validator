@@ -13,13 +13,90 @@ import (
 // go test -v -cover .
 // go test -v -cover -run TestIsValid .
 
+// go test -v -run TestIsValidMin .
+
 // go test -v -cover -run TestIsValidCommon .
 func TestIsValidCommon(t *testing.T) {
 	type Article struct {
-		Age uint8
+		Age    uint8
+		Images []string
+		Date   time.Time
 	}
 
 	g := Goblin(t)
+
+	g.Describe(`Grouped Rules`, func() {
+		g.It("success when given valid values", func() {
+			filter := Filter{
+				{
+					Field: "Images",
+					Check: Group{
+						NON_ZERO,
+						Range{1, 10},
+					},
+				},
+			}
+
+			success := filter.IsValid(Article{
+				Images: []string{"img1", "img2"},
+			})
+
+			g.Assert(success).IsTrue()
+		})
+
+		g.It("failure when given invalid values", func() {
+			filter := Filter{
+				{
+					Field: "Images",
+					Check: Group{
+						NON_ZERO,
+						Range{1, 10},
+					},
+				},
+			}
+
+			success := filter.IsValid(Article{})
+			g.Assert(success).IsFalse()
+		})
+
+		g.It("failure when given invalid rule", func() {
+			filter := Filter{
+				{
+					Field: "Images",
+					Check: nil,
+				},
+			}
+
+			success := filter.IsValid(Article{})
+			g.Assert(success).IsFalse()
+		})
+	})
+
+	g.Describe(`Unrecognized Rules`, func() {
+		g.It("failure when given an invalid rule", func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: nil,
+				},
+			}
+
+			success := filter.IsValid(Article{Date: time.Now()})
+			g.Assert(success).IsFalse()
+		})
+
+		g.It("failure when given an unrecognized rule", func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"unknown-rule", "some-value"},
+				},
+			}
+
+			success := filter.IsValid(Article{Date: time.Now()})
+			g.Assert(success).IsFalse()
+		})
+	})
 
 	g.Describe(`Emptiness`, func() {
 		g.It("success when the field is optional", func() {
@@ -37,15 +114,14 @@ func TestIsValidCommon(t *testing.T) {
 	})
 }
 
-// go test -v -run TestIsValidMin .
-
 func TestIsValidMin(t *testing.T) {
 	type Article struct {
-		Title   string
-		Age     uint8
-		Images  []string
-		Phones  [4]string
-		Options map[int]string
+		Title     string
+		Age       uint8
+		Images    []string
+		Phones    [4]string
+		Options   map[int]string
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -318,6 +394,18 @@ func TestIsValidMin(t *testing.T) {
 					g.Assert(result).IsFalse()
 				}
 			})
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"min", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 	})
 }
@@ -326,11 +414,12 @@ func TestIsValidMin(t *testing.T) {
 
 func TestIsValidMax(t *testing.T) {
 	type Article struct {
-		Title   string
-		Age     uint8
-		Images  []string
-		Phones  [4]string
-		Options map[int]string
+		Title     string
+		Age       uint8
+		Images    []string
+		Phones    [4]string
+		Options   map[int]string
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -603,6 +692,18 @@ func TestIsValidMax(t *testing.T) {
 					g.Assert(result).IsFalse()
 				}
 			})
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"max", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 	})
 }
@@ -611,11 +712,12 @@ func TestIsValidMax(t *testing.T) {
 
 func TestIsValidEq(t *testing.T) {
 	type Article struct {
-		Title   string
-		Age     uint8
-		Images  []string
-		Phones  [4]string
-		Options map[int]string
+		Title     string
+		Age       uint8
+		Images    []string
+		Phones    [4]string
+		Options   map[int]string
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -888,6 +990,18 @@ func TestIsValidEq(t *testing.T) {
 					g.Assert(result).IsFalse()
 				}
 			})
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"eq", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 	})
 }
@@ -901,6 +1015,7 @@ func TestIsValidRange(t *testing.T) {
 		Images    []string
 		FilledArr [4]string
 		Options   map[string]string
+		Guesswhat any
 
 		// Date time.Time
 	}
@@ -1182,6 +1297,18 @@ func TestIsValidRange(t *testing.T) {
 				result := filter.IsValid(Article{})
 				g.Assert(result).IsFalse()
 			})
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Range{1, 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 	})
 }
@@ -1190,7 +1317,8 @@ func TestIsValidRange(t *testing.T) {
 
 func TestIsValidYear(t *testing.T) {
 	type Article struct {
-		Date time.Time
+		Date      time.Time
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -1225,6 +1353,30 @@ func TestIsValidYear(t *testing.T) {
 
 			g.Assert(result).IsFalse()
 		})
+
+		g.It("failure when given an empty value", func() {
+			filter := Filter{
+				{
+					Field: "Date",
+					Check: Rule{"year", 2024},
+				},
+			}
+
+			result := filter.IsValid(Article{})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when given an unsupported type value", func() {
+			filter := Filter{
+				{
+					Field: "Guesswhat",
+					Check: Rule{"year", 2024},
+				},
+			}
+
+			success := filter.IsValid(Article{Guesswhat: nil})
+			g.Assert(success).IsFalse()
+		})
 	})
 }
 
@@ -1232,7 +1384,8 @@ func TestIsValidYear(t *testing.T) {
 
 func TestIsValidDate(t *testing.T) {
 	type Article struct {
-		Date time.Time `json:"date"`
+		Date      time.Time
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -1265,6 +1418,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{
 					Date: now.Add(-time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:min", now.Unix()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1308,6 +1473,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{Date: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:min", now.Format(time.RFC3339)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -1335,6 +1512,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{
 					Date: now.Add(-time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:min", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1424,6 +1613,18 @@ func TestIsValidDate(t *testing.T) {
 				})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:max", now.Unix()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within string & time.Time`, func() {
@@ -1465,6 +1666,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{Date: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:max", now.Format(time.RFC3339)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -1492,6 +1705,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{
 					Date: now.Add(time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:max", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1580,6 +1805,18 @@ func TestIsValidDate(t *testing.T) {
 				})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:eq", now.Unix()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within string & time.Time`, func() {
@@ -1620,6 +1857,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{Date: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:eq", now.Format(time.RFC3339)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -1646,6 +1895,18 @@ func TestIsValidDate(t *testing.T) {
 				success := filter.IsValid(Article{
 					Date: now.Add(time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"date:eq", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1710,7 +1971,8 @@ func TestIsValidDate(t *testing.T) {
 
 func TestIsValidTime(t *testing.T) {
 	type Article struct {
-		Time time.Time `json:"time"`
+		Time      time.Time
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -1743,6 +2005,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{
 					Time: now.Add(-time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:min", now.UnixNano()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1786,6 +2060,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{Time: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:min", strconv.FormatInt(now.UnixNano(), 10)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -1813,6 +2099,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{
 					Time: now.Add(-time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:min", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -1902,6 +2200,18 @@ func TestIsValidTime(t *testing.T) {
 				})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:max", now.UnixNano()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within string & time.Time`, func() {
@@ -1943,6 +2253,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{Time: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:max", strconv.FormatInt(now.UnixNano(), 10)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -1970,6 +2292,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{
 					Time: now.Add(time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:max", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -2058,6 +2392,18 @@ func TestIsValidTime(t *testing.T) {
 				})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:eq", now.UnixNano()},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within string & time.Time`, func() {
@@ -2098,6 +2444,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{Time: now})
 				g.Assert(success).IsFalse()
 			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:eq", strconv.FormatInt(now.UnixNano(), 10)},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
 		})
 
 		g.Describe(`compute within time.Time & time.Time`, func() {
@@ -2124,6 +2482,18 @@ func TestIsValidTime(t *testing.T) {
 				success := filter.IsValid(Article{
 					Time: now.Add(time.Second),
 				})
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"time:eq", now},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -2188,7 +2558,8 @@ func TestIsValidTime(t *testing.T) {
 
 func TestIsValidMatch(t *testing.T) {
 	type Article struct {
-		Hash string `json:"hash"`
+		Hash      string
+		Guesswhat any
 	}
 
 	g := Goblin(t)
@@ -2222,6 +2593,18 @@ func TestIsValidMatch(t *testing.T) {
 			})
 
 			g.Assert(result).IsTrue()
+		})
+
+		g.It("failure when given an invalid mask", func() {
+			filter := Filter{
+				{
+					Field: "Hash",
+					Check: Rule{"match", `:)`},
+				},
+			}
+
+			result := filter.IsValid(Article{Hash: ":)"})
+			g.Assert(result).IsFalse()
 		})
 
 		g.It("failure when the value does not match the mask", func() {
@@ -2279,6 +2662,18 @@ func TestIsValidMatch(t *testing.T) {
 
 			result := filter.IsValid(Article{})
 			g.Assert(result).IsFalse(result)
+		})
+
+		g.It("failure when given an unsupported type value", func() {
+			filter := Filter{
+				{
+					Field: "Guesswhat",
+					Check: Rule{"match", 10},
+				},
+			}
+
+			success := filter.IsValid(Article{Guesswhat: nil})
+			g.Assert(success).IsFalse()
 		})
 	})
 }
@@ -3543,6 +3938,25 @@ func TestIsValidEachMin(t *testing.T) {
 			})
 		})
 
+		// ...
+
+		g.Describe(`invalidity`, func() {
+			g.It("failure when given an unsupported type value", func() {
+				type Article struct {
+					Guesswhat any `json:"guesswhat"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"each:min", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
+		})
 	})
 }
 
@@ -4814,6 +5228,25 @@ func TestIsValidEachMax(t *testing.T) {
 			})
 		})
 
+		// ...
+
+		g.Describe(`invalidity`, func() {
+			g.It("failure when given an unsupported type value", func() {
+				type Article struct {
+					Guesswhat any `json:"guesswhat"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"each:max", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
+		})
 	})
 }
 
@@ -6066,6 +6499,26 @@ func TestIsValidEachEq(t *testing.T) {
 				})
 			})
 		})
+
+		// ...
+
+		g.Describe(`invalidity`, func() {
+			g.It("failure when given an unsupported type value", func() {
+				type Article struct {
+					Guesswhat any `json:"guesswhat"`
+				}
+
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"each:eq", 10},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
+		})
 	})
 }
 
@@ -6978,7 +7431,8 @@ func TestIsValidEachRange(t *testing.T) {
 
 		g.Describe("invalidity", func() {
 			type Slice struct {
-				Bands []string `json:"bands"`
+				Bands     []string
+				Guesswhat any
 			}
 
 			g.It("success when given an empty value", func() {
@@ -7008,6 +7462,18 @@ func TestIsValidEachRange(t *testing.T) {
 					},
 				})
 
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"each:range", []uint8{35, 45}},
+					},
+				}
+
+				success := filter.IsValid(Slice{Guesswhat: nil})
 				g.Assert(success).IsFalse()
 			})
 		})
@@ -7100,6 +7566,24 @@ func TestIsValidEachMatch(t *testing.T) {
 					{
 						Field: "Hash",
 						Check: Rule{"each:match"},
+					},
+				}
+
+				success := filter.IsValid(Array{
+					Hash: [2]string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+						"37763f73e30e7b0bfbfffb9643c1cbc8",
+					},
+				})
+
+				g.Assert(success).IsFalse()
+			})
+
+			g.It("failure when given an invalid mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"each:match", `:)`},
 					},
 				}
 
@@ -7244,6 +7728,23 @@ func TestIsValidEachMatch(t *testing.T) {
 				g.Assert(success).IsFalse()
 			})
 
+			g.It("failure when given an invalid mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"each:match", `:)`},
+					},
+				}
+
+				success := filter.IsValid(Slice{
+					Hash: []string{
+						"b0fb0c19711bcf3b73f41c909f66bded",
+					},
+				})
+
+				g.Assert(success).IsFalse()
+			})
+
 			g.It("failure when given an empty mask", func() {
 				filter := Filter{
 					{
@@ -7375,6 +7876,23 @@ func TestIsValidEachMatch(t *testing.T) {
 				g.Assert(success).IsFalse()
 			})
 
+			g.It("failure when given an invalid mask", func() {
+				filter := Filter{
+					{
+						Field: "Hash",
+						Check: Rule{"each:match", `:)`},
+					},
+				}
+
+				success := filter.IsValid(Map{
+					Hash: map[int]string{
+						1: "b0fb0c19711bcf3b73f41c909f66bded",
+					},
+				})
+
+				g.Assert(success).IsFalse()
+			})
+
 			g.It("failure when given an empty mask", func() {
 				filter := Filter{
 					{
@@ -7412,6 +7930,25 @@ func TestIsValidEachMatch(t *testing.T) {
 			})
 		})
 
+		// ...
+
+		g.Describe(`invalidity`, func() {
+			type Article struct {
+				Guesswhat any `json:"guesswhat"`
+			}
+
+			g.It("failure when given an unsupported type value", func() {
+				filter := Filter{
+					{
+						Field: "Guesswhat",
+						Check: Rule{"each:match", `(?i)^[0-9a-f]{32}$`},
+					},
+				}
+
+				success := filter.IsValid(Article{Guesswhat: nil})
+				g.Assert(success).IsFalse()
+			})
+		})
 	})
 }
 
@@ -7935,6 +8472,21 @@ func TestIsValidFieldsMod(t *testing.T) {
 				},
 				{
 					Check: Rule{"fields:min", 4},
+				},
+			}
+
+			result := filter.IsValid(Article{})
+			g.Assert(result).IsFalse()
+		})
+
+		g.It("failure when missing required fields", func() {
+			filter := Filter{
+				{
+					Field: "Id",
+					Check: Rule{"min", 1},
+				},
+				{
+					Check: "UNDEFINED_RULE",
 				},
 			}
 
