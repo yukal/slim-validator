@@ -319,6 +319,9 @@ func filterEq(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgEqSetLen, proto.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = fmt.Sprintf(MsgEq, proto.Interface())
 	}
