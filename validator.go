@@ -101,8 +101,8 @@ func (filter Filter) Validate(data any) []string {
 }
 
 func checkField(rules, value reflect.Value) string {
-	switch rules.Type().String() {
-	case "validator.Group":
+	switch rules.String() {
+	case "<validator.Group Value>":
 
 		for n := 0; n < rules.Len(); n++ {
 			item := reflect.Indirect(reflect.ValueOf(
@@ -114,29 +114,25 @@ func checkField(rules, value reflect.Value) string {
 			}
 		}
 
-	case "validator.Range":
+		return ""
+
+	case "<validator.Range Value>":
 		return compare("range", rules, value)
 
-	case "validator.Rule":
+	case "<validator.Rule Value>":
 		action := rules.Index(0).Elem().String()
 		proto := rules.Index(1).Elem()
 
 		return compare(action, proto, value)
 
-	case "string":
+	case NON_ZERO:
 		action := rules.String()
 		proto := reflect.ValueOf(nil)
 
 		return compare(action, proto, value)
-
-	case "interface {}":
-		unpackedRules := reflect.Indirect(reflect.ValueOf(rules.Interface()))
-		if hint := checkField(unpackedRules, value); hint != "" {
-			return hint
-		}
 	}
 
-	return ""
+	return MsgInvalidRule
 }
 
 func checkOthers(rules reflect.Value, successFields int) string {
