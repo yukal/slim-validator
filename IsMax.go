@@ -292,7 +292,6 @@ func IsMax(proto, value any) bool {
 		if proto.(int8) >= 0 {
 			return value.(uint8) <= uint8(proto.(int8))
 		}
-		return false
 
 	case "uint8:int16", "byte:int16":
 		return int16(value.(uint8)) <= proto.(int16)
@@ -312,13 +311,11 @@ func IsMax(proto, value any) bool {
 		if proto.(int8) >= 0 {
 			return value.(uint16) <= uint16(proto.(int8))
 		}
-		return false
 
 	case "uint16:int16":
 		if proto.(int16) >= 0 {
 			return value.(uint16) <= uint16(proto.(int16))
 		}
-		return false
 
 	case "uint16:int32", "uint16:rune":
 		return int32(value.(uint16)) <= proto.(int32)
@@ -335,19 +332,16 @@ func IsMax(proto, value any) bool {
 		if proto.(int8) >= 0 {
 			return value.(uint32) <= uint32(proto.(int8))
 		}
-		return false
 
 	case "uint32:int16":
 		if proto.(int16) >= 0 {
 			return value.(uint32) <= uint32(proto.(int16))
 		}
-		return false
 
 	case "uint32:int32", "uint32:rune":
 		if proto.(int32) >= 0 {
 			return value.(uint32) <= uint32(proto.(int32))
 		}
-		return false
 
 	case "uint32:int64":
 		return int64(value.(uint32)) <= proto.(int64)
@@ -361,31 +355,26 @@ func IsMax(proto, value any) bool {
 		if proto.(int8) >= 0 {
 			return value.(uint64) <= uint64(proto.(int8))
 		}
-		return false
 
 	case "uint64:int16":
 		if proto.(int16) >= 0 {
 			return value.(uint64) <= uint64(proto.(int16))
 		}
-		return false
 
 	case "uint64:int32", "uint64:rune":
 		if proto.(int32) >= 0 {
 			return value.(uint64) <= uint64(proto.(int32))
 		}
-		return false
 
 	case "uint64:int64":
 		if proto.(int64) >= 0 {
 			return value.(uint64) <= uint64(proto.(int64))
 		}
-		return false
 
 	case "uint64:int":
 		if proto.(int) >= 0 {
 			return value.(uint64) <= uint64(proto.(int))
 		}
-		return false
 
 	// ...
 
@@ -393,31 +382,26 @@ func IsMax(proto, value any) bool {
 		if proto.(int8) >= 0 {
 			return value.(uint) <= uint(proto.(int8))
 		}
-		return false
 
 	case "uint:int16":
 		if proto.(int16) >= 0 {
 			return value.(uint) <= uint(proto.(int16))
 		}
-		return false
 
 	case "uint:int32", "uint:rune":
 		if proto.(int32) >= 0 {
 			return value.(uint) <= uint(proto.(int32))
 		}
-		return false
 
 	case "uint:int64":
 		if proto.(int64) >= 0 {
 			return uint64(value.(uint)) <= uint64(proto.(int64))
 		}
-		return false
 
 	case "uint:int":
 		if proto.(int) >= 0 {
 			return value.(uint) <= uint(proto.(int))
 		}
-		return false
 
 	}
 
