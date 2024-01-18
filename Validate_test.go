@@ -15,6 +15,30 @@ import (
 // go test -v -cover .
 // go test -v -cover -run TestValidate .
 
+// go test -v -cover -run TestValidateCommon .
+func TestValidateCommon(t *testing.T) {
+	type Article struct {
+		Age uint8 `json:"age"`
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Emptiness`, func() {
+		g.It("success when the field is optional", func() {
+			filter := Filter{
+				{
+					Field:    "Age",
+					Check:    Rule{"min", 21},
+					Optional: true,
+				},
+			}
+
+			hints := filter.Validate(Article{})
+			g.Assert(len(hints)).Equal(0, hints)
+		})
+	})
+}
+
 // go test -v -run TestValidateMin .
 
 func TestValidateMin(t *testing.T) {
@@ -7240,7 +7264,8 @@ func TestValidateEachRange(t *testing.T) {
 
 		g.Describe("invalidity", func() {
 			type Slice struct {
-				Bands []string `json:"bands"`
+				Bands     []string `json:"bands"`
+				Guesswhat any      `json:"guesswhat"`
 			}
 
 			g.It("success when given an empty value", func() {

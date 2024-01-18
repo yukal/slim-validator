@@ -13,6 +13,30 @@ import (
 // go test -v -cover .
 // go test -v -cover -run TestIsValid .
 
+// go test -v -cover -run TestIsValidCommon .
+func TestIsValidCommon(t *testing.T) {
+	type Article struct {
+		Age uint8
+	}
+
+	g := Goblin(t)
+
+	g.Describe(`Emptiness`, func() {
+		g.It("success when the field is optional", func() {
+			filter := Filter{
+				{
+					Field:    "Age",
+					Check:    Rule{"min", 21},
+					Optional: true,
+				},
+			}
+
+			success := filter.IsValid(Article{})
+			g.Assert(success).IsTrue()
+		})
+	})
+}
+
 // go test -v -run TestIsValidMin .
 
 func TestIsValidMin(t *testing.T) {
