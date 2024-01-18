@@ -92,31 +92,26 @@ func IsMin(proto, value any) bool {
 		if value.(int8) >= 0 {
 			return uint8(value.(int8)) >= proto.(uint8)
 		}
-		return false
 
 	case "int8:uint16":
 		if value.(int8) >= 0 {
 			return uint16(value.(int8)) >= proto.(uint16)
 		}
-		return false
 
 	case "int8:uint32":
 		if value.(int8) >= 0 {
 			return uint32(value.(int8)) >= proto.(uint32)
 		}
-		return false
 
 	case "int8:uint64":
 		if value.(int8) >= 0 {
 			return uint64(value.(int8)) >= proto.(uint64)
 		}
-		return false
 
 	case "int8:uint":
 		if value.(int8) >= 0 {
 			return uint(value.(int8)) >= proto.(uint)
 		}
-		return false
 
 	// ...
 
@@ -127,51 +122,44 @@ func IsMin(proto, value any) bool {
 		if value.(int16) >= 0 {
 			return uint16(value.(int16)) >= proto.(uint16)
 		}
-		return false
 
 	case "int16:uint32":
 		if value.(int16) >= 0 {
 			return uint32(value.(int16)) >= proto.(uint32)
 		}
-		return false
 
 	case "int16:uint64":
 		if value.(int16) >= 0 {
 			return uint64(value.(int16)) >= proto.(uint64)
 		}
-		return false
 
 	case "int16:uint":
 		if value.(int16) >= 0 {
 			return uint(value.(int16)) >= proto.(uint)
 		}
-		return false
 
 	// ...
 
-	case "int32:uint8", "int32:byte":
+	case "int32:uint8", "int32:byte", "rune:uint8", "rune:byte":
 		return value.(int32) >= int32(proto.(uint8))
 
-	case "int32:uint16":
+	case "int32:uint16", "rune:uint16":
 		return value.(int32) >= int32(proto.(uint16))
 
-	case "int32:uint32":
+	case "int32:uint32", "rune:uint32":
 		if value.(int32) >= 0 {
 			return uint32(value.(int32)) >= proto.(uint32)
 		}
-		return false
 
-	case "int32:uint64":
+	case "int32:uint64", "rune:uint64":
 		if value.(int32) >= 0 {
 			return uint64(value.(int32)) >= proto.(uint64)
 		}
-		return false
 
-	case "int32:uint":
+	case "int32:uint", "rune:uint":
 		if value.(int32) >= 0 {
 			return uint(value.(int32)) >= proto.(uint)
 		}
-		return false
 
 	// ...
 
@@ -188,13 +176,11 @@ func IsMin(proto, value any) bool {
 		if value.(int64) >= 0 {
 			return uint64(value.(int64)) >= uint64(proto.(uint64))
 		}
-		return false
 
 	case "int64:uint":
 		if value.(int64) >= 0 {
 			return uint64(value.(int64)) >= uint64(proto.(uint))
 		}
-		return false
 
 	// ...
 
@@ -208,51 +194,16 @@ func IsMin(proto, value any) bool {
 		if value.(int) >= 0 {
 			return uint64(value.(int)) >= uint64(proto.(uint32))
 		}
-		return false
 
 	case "int:uint64":
 		if value.(int) >= 0 {
 			return uint64(value.(int)) >= proto.(uint64)
 		}
-		return false
 
 	case "int:uint":
 		if value.(int) >= 0 {
 			return uint(value.(int)) >= proto.(uint)
 		}
-		return false
-
-	// ...
-
-	case "rune:uint8", "rune:byte":
-		if value.(rune) >= 0 {
-			return uint32(value.(rune)) >= uint32(proto.(uint8))
-		}
-		return false
-
-	case "rune:uint16":
-		if value.(rune) >= 0 {
-			return uint32(value.(rune)) >= uint32(proto.(uint16))
-		}
-		return false
-
-	case "rune:uint32":
-		if value.(rune) >= 0 {
-			return uint32(value.(rune)) >= proto.(uint32)
-		}
-		return false
-
-	case "rune:uint64":
-		if value.(rune) >= 0 {
-			return uint64(value.(rune)) >= proto.(uint64)
-		}
-		return false
-
-	case "rune:uint":
-		if value.(rune) >= 0 {
-			return uint(value.(rune)) >= proto.(uint)
-		}
-		return false
 
 	// ............................................................
 	// uint

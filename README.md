@@ -24,7 +24,7 @@ import (
 )
 
 # import using a context
-# In that case, you will be able to use the validator directly without any aliasing.
+# In that case, you will be able to use the validator directly without any aliasing
 import (
   . "github.com/yukal/slim-validator"
 )
@@ -32,7 +32,7 @@ import (
 
 ## Usage
 
-The two methods you will need for validation are the `IsValid()` and the `Validate()`. See a detailed example below
+The two methods you will need for validation are the `IsValid()` and the `Validate()` after creating a validation filter. See a detailed example below:
 
 ```go
 type Article struct {
@@ -62,6 +62,8 @@ filter := validator.Filter{
   },
   {
     Field: "Phone",
+
+    // phone must match the mask of the regular expression
     Check: validator.Rule{"match", `^\+38\d{10}$`},
 
     // will not validate if the value is not passed
@@ -69,11 +71,14 @@ filter := validator.Filter{
   },
   {
     Field: "Images",
+
+    // images must match the mask of the regular expression
     Check: validator.Rule{"each:match", `(?i)^https://img.it/[0-9a-f]{32}.jpe?g$`},
   },
   {
     Field: "Date",
-    // date must be exactly 2024
+
+    // date must exactly contain the 2024 year
     Check: validator.Rule{"year", 2024},
   },
 }
@@ -90,12 +95,10 @@ article := Article{
   Date: time.Now(),
 }
 
-// returns bool
-if !filter.Valid(article) {
+if !filter.IsValid(article) {
   fmt.Println("article is not valid!")
 }
 
-// returns error hints
 hints := filter.Validate(article)
 
 for _, hint := range hints {
@@ -207,7 +210,7 @@ Compares the compliance between the prototype and value, the value must exactly 
 **int8**, **int16**, **int32**, **int64**, **int**, **uint8**, **uint16**, **uint32**, **uint64**, **uint**, **string**, **array**, **slice**, **map**
 
 ```go
-// sex must be exactly 2
+// sex must be exactly 1
 {
   Field: "Sex",
   Check: validator.Rule{"eq", 1},

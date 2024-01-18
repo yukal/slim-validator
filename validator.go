@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -101,8 +102,8 @@ func (filter Filter) Validate(data any) []string {
 }
 
 func checkField(rules, value reflect.Value) string {
-	switch rules.Type().String() {
-	case "validator.Group":
+	switch rules.String() {
+	case "<validator.Group Value>":
 
 		for n := 0; n < rules.Len(); n++ {
 			item := reflect.Indirect(reflect.ValueOf(
@@ -114,29 +115,25 @@ func checkField(rules, value reflect.Value) string {
 			}
 		}
 
-	case "validator.Range":
+		return ""
+
+	case "<validator.Range Value>":
 		return compare("range", rules, value)
 
-	case "validator.Rule":
+	case "<validator.Rule Value>":
 		action := rules.Index(0).Elem().String()
 		proto := rules.Index(1).Elem()
 
 		return compare(action, proto, value)
 
-	case "string":
+	case NON_ZERO:
 		action := rules.String()
 		proto := reflect.ValueOf(nil)
 
 		return compare(action, proto, value)
-
-	case "interface {}":
-		unpackedRules := reflect.Indirect(reflect.ValueOf(rules.Interface()))
-		if hint := checkField(unpackedRules, value); hint != "" {
-			return hint
-		}
 	}
 
-	return ""
+	return MsgInvalidRule
 }
 
 func checkOthers(rules reflect.Value, successFields int) string {
@@ -146,12 +143,12 @@ func checkOthers(rules reflect.Value, successFields int) string {
 		proto  reflect.Value
 	)
 
-	switch rules.Type().String() {
-	case "validator.Rule":
+	switch rules.String() {
+	case "<validator.Rule Value>":
 		action = rules.Index(0).Elem().String()
 		proto = rules.Index(1).Elem()
 
-		if action[0:6] == "fields" {
+		if strings.HasPrefix(action, "fields:") {
 			action = action[7:]
 			value = reflect.ValueOf(successFields)
 		}
@@ -168,10 +165,6 @@ func checkOthers(rules reflect.Value, successFields int) string {
 }
 
 func compare(action string, proto, value reflect.Value) string {
-	if !value.IsValid() {
-		return MsgInvalidValue
-	}
-
 	switch action {
 	case NON_ZERO:
 		if value.IsZero() {
@@ -211,15 +204,11 @@ func compare(action string, proto, value reflect.Value) string {
 		return filterTime(action[5:], proto, value)
 
 	case "year":
-		if !IsYearEqual(proto.Interface(), value.Interface()) {
-			return fmt.Sprintf(MsgEq, proto.Interface())
-		}
+		return filterYearEqual(proto, value)
 
 	default:
 		return MsgInvalidRule
 	}
-
-	return ""
 }
 
 func filterRange(proto, value reflect.Value) string {
@@ -244,6 +233,9 @@ func filterRange(proto, value reflect.Value) string {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		hint = fmt.Sprintf(MsgRange, valMin.Interface(), valMax.Interface())
+
+	case reflect.Invalid:
+		return MsgInvalidValue
 
 	default:
 		hint = MsgUnsupportType
@@ -271,6 +263,9 @@ func filterMin(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgMinSetLen, proto.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = fmt.Sprintf(MsgMin, proto.Interface())
 	}
@@ -293,6 +288,9 @@ func filterMax(proto, value reflect.Value) string {
 	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice:
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgMaxSetLen, proto.Interface())
+
+	case reflect.Invalid:
+		return MsgInvalidValue
 
 	default:
 		hint = fmt.Sprintf(MsgMax, proto.Interface())
@@ -317,12 +315,29 @@ func filterEq(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgEqSetLen, proto.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = fmt.Sprintf(MsgEq, proto.Interface())
 	}
 
 	if !IsEqual(proto.Interface(), value.Interface()) {
 		return hint
+	}
+
+	return ""
+}
+
+func filterYearEqual(proto, value reflect.Value) string {
+	switch value.String() {
+	case "<time.Time Value>":
+		if !IsEqual(proto.Interface(), value.Interface().(time.Time).Year()) {
+			return fmt.Sprintf(MsgEq, proto.Interface())
+		}
+
+	default:
+		return MsgUnsupportType
 	}
 
 	return ""
@@ -340,7 +355,11 @@ func filterEach(action string, proto, value reflect.Value) string {
 	case reflect.Array, reflect.Slice:
 		for n := 0; n < value.Len(); n++ {
 			if hint := compare(action, proto, value.Index(n)); hint != "" {
-				return fmt.Sprintf("item[%v] "+hint, n)
+				if hint != MsgInvalidRule {
+					hint = fmt.Sprintf("item[%v] "+hint, n)
+				}
+
+				return hint
 			}
 		}
 
@@ -351,7 +370,11 @@ func filterEach(action string, proto, value reflect.Value) string {
 
 		for iter.Next() {
 			if hint := compare(action, proto, iter.Value()); hint != "" {
-				return fmt.Sprintf("item[%v] "+hint, iter.Key())
+				if hint != MsgInvalidRule {
+					hint = fmt.Sprintf("item[%v] "+hint, iter.Key())
+				}
+
+				return hint
 			}
 		}
 
@@ -363,10 +386,6 @@ func filterEach(action string, proto, value reflect.Value) string {
 
 func filterDate(action string, proto, value reflect.Value) string {
 	var tmProto, tmValue int64
-
-	if proto.Equal(refNil) {
-		return MsgInvalidRule
-	}
 
 	if value.Equal(refNil) {
 		return MsgInvalidValue
@@ -420,10 +439,6 @@ func filterDate(action string, proto, value reflect.Value) string {
 func filterTime(action string, proto, value reflect.Value) string {
 	var tmProto, tmValue int64
 	var err error
-
-	if proto.Equal(refNil) {
-		return MsgInvalidRule
-	}
 
 	if value.Equal(refNil) {
 		return MsgInvalidValue
