@@ -1,3 +1,50 @@
+## [v0.21.0](https://github.com/yukal/slim-validator/compare/6e59d0cff354da1dff447271fd1eb6b4db93d115...e1fcbe96de9320c56419775f15d749c8bab1b6b2) – 2024-01-18
+
+### New Features
+
+- validation type improvement
+  - **check-others:**  ([e36919cb](https://github.com/yukal/slim-validator/commit/e36919cb8edab37a4f12af1385d021147c430d60))
+  - **check-field:**  ([3dbf0460](https://github.com/yukal/slim-validator/commit/3dbf04602bcdb3a47db6e9e64efa3cd1906e6c7d))
+- return MsgInvalidValue
+  - **filter-range:**  ([236da085](https://github.com/yukal/slim-validator/commit/236da085799cb3d11a2ffb2f79d32dcb18c39da9))
+  - **filter-eq:**  ([c83bae1e](https://github.com/yukal/slim-validator/commit/c83bae1e89c57d36bcae4446e54bc6cc48bd569e))
+  - **filter-max:**  ([b53b7e42](https://github.com/yukal/slim-validator/commit/b53b7e42124ec403ab5dd0b162ff96ed8adfc119))
+  - **filter-min:**  ([2e7c907f](https://github.com/yukal/slim-validator/commit/2e7c907fb6ef7b16e7983c555354523a65656a20))
+- return MsgInvalidRule
+  - **modifier-each:**  ([9a60791a](https://github.com/yukal/slim-validator/commit/9a60791a4535421d63a7e0170f8439ff00accd16))
+
+### Refactors
+
+- **core:** remove unnecessary check
+  - **filter:**  ([47523c60](https://github.com/yukal/slim-validator/commit/47523c608fee2cba630f28c178cfdea1b61dba1c))
+  - **compare:**  ([4fab961d](https://github.com/yukal/slim-validator/commit/4fab961dc7f553b73033cf13b6e1e3c890699025))
+- **core:** func IsYearEqual became a private filterYearEqual ([ee9f1d0a](https://github.com/yukal/slim-validator/commit/ee9f1d0a53930dbe3fde3912363ea01d55894469))
+- **test:**  remove returns that have the same default value ([3573d9c0](https://github.com/yukal/slim-validator/commit/3573d9c06e431002e71b69e097e3b2a6a2a94e54))
+- **test:**  combine logical blocks ([8f061876](https://github.com/yukal/slim-validator/commit/8f061876f46a320fa5e3d7f3ff46660293978f77))
+
+### Tests
+
+- **core:**  add benchmark tests ([6d739899](https://github.com/yukal/slim-validator/commit/6d739899b632098294287e6c99cfa34f80d31377))
+- **core:**  check invalidity within missed tests ([a83bed3a](https://github.com/yukal/slim-validator/commit/a83bed3a1973ee1610a6013abd7bc8bae57c7c28))
+- **core:**  validate optional fields ([cf7011af](https://github.com/yukal/slim-validator/commit/cf7011af12027a80fbb57043d7413b71a06cb629))
+- **coverage:**  improve coverage indicators ([b861f45c](https://github.com/yukal/slim-validator/commit/b861f45caa88b7b9e0952e4d6d4a143f1e2bc64c))
+-  skip test files of private methods ([5ac2547c](https://github.com/yukal/slim-validator/commit/5ac2547c7f003044646cb2c132e69c0b214878fe))
+- **compare:**  remove duplicate tests ([8b681185](https://github.com/yukal/slim-validator/commit/8b681185074dfda1f2b141ca8f9109034e933c11))
+
+
+### Build System
+
+-  add Makefile ([7d0ba005](https://github.com/yukal/slim-validator/commit/7d0ba00583218ff4c1452b6dfdc859668f0f09eb))
+
+### Continuous Integration
+
+- **job-action:**  turn on benchmark tests ([05f4dc94](https://github.com/yukal/slim-validator/commit/05f4dc944074b24bab3e7c3db9914a5e7a064dc0))
+
+### Docs
+
+-  update readme ([e1fcbe96](https://github.com/yukal/slim-validator/commit/e1fcbe96de9320c56419775f15d749c8bab1b6b2))
+
+
 ## [v0.14.0](https://github.com/yukal/slim-validator/compare/dfdb22c433879ea3b12f5727f3c349148465d61c...656a76596b01860c61dc8213f35ff62a949117dc) – 2024-01-15
 
 ### New Features
