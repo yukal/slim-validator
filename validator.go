@@ -211,15 +211,11 @@ func compare(action string, proto, value reflect.Value) string {
 		return filterTime(action[5:], proto, value)
 
 	case "year":
-		if !IsYearEqual(proto.Interface(), value.Interface()) {
-			return fmt.Sprintf(MsgEq, proto.Interface())
-		}
+		return filterYearEqual(proto, value)
 
 	default:
 		return MsgInvalidRule
 	}
-
-	return ""
 }
 
 func filterRange(proto, value reflect.Value) string {
@@ -323,6 +319,20 @@ func filterEq(proto, value reflect.Value) string {
 
 	if !IsEqual(proto.Interface(), value.Interface()) {
 		return hint
+	}
+
+	return ""
+}
+
+func filterYearEqual(proto, value reflect.Value) string {
+	switch value.String() {
+	case "<time.Time Value>":
+		if !IsEqual(proto.Interface(), value.Interface().(time.Time).Year()) {
+			return fmt.Sprintf(MsgEq, proto.Interface())
+		}
+
+	default:
+		return MsgUnsupportType
 	}
 
 	return ""
