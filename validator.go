@@ -267,6 +267,9 @@ func filterMin(proto, value reflect.Value) string {
 		value = reflect.ValueOf(value.Len())
 		hint = fmt.Sprintf(MsgMinSetLen, proto.Interface())
 
+	case reflect.Invalid:
+		return MsgInvalidValue
+
 	default:
 		hint = fmt.Sprintf(MsgMin, proto.Interface())
 	}
