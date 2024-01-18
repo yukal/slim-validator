@@ -350,7 +350,11 @@ func filterEach(action string, proto, value reflect.Value) string {
 	case reflect.Array, reflect.Slice:
 		for n := 0; n < value.Len(); n++ {
 			if hint := compare(action, proto, value.Index(n)); hint != "" {
-				return fmt.Sprintf("item[%v] "+hint, n)
+				if hint != MsgInvalidRule {
+					hint = fmt.Sprintf("item[%v] "+hint, n)
+				}
+
+				return hint
 			}
 		}
 
@@ -361,7 +365,11 @@ func filterEach(action string, proto, value reflect.Value) string {
 
 		for iter.Next() {
 			if hint := compare(action, proto, iter.Value()); hint != "" {
-				return fmt.Sprintf("item[%v] "+hint, iter.Key())
+				if hint != MsgInvalidRule {
+					hint = fmt.Sprintf("item[%v] "+hint, iter.Key())
+				}
+
+				return hint
 			}
 		}
 
