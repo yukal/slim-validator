@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode/utf8"
 )
@@ -142,12 +143,12 @@ func checkOthers(rules reflect.Value, successFields int) string {
 		proto  reflect.Value
 	)
 
-	switch rules.Type().String() {
-	case "validator.Rule":
+	switch rules.String() {
+	case "<validator.Rule Value>":
 		action = rules.Index(0).Elem().String()
 		proto = rules.Index(1).Elem()
 
-		if action[0:6] == "fields" {
+		if strings.HasPrefix(action, "fields:") {
 			action = action[7:]
 			value = reflect.ValueOf(successFields)
 		}
