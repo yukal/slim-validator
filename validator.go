@@ -387,10 +387,6 @@ func filterEach(action string, proto, value reflect.Value) string {
 func filterDate(action string, proto, value reflect.Value) string {
 	var tmProto, tmValue int64
 
-	if proto.Equal(refNil) {
-		return MsgInvalidRule
-	}
-
 	if value.Equal(refNil) {
 		return MsgInvalidValue
 	}
@@ -443,10 +439,6 @@ func filterDate(action string, proto, value reflect.Value) string {
 func filterTime(action string, proto, value reflect.Value) string {
 	var tmProto, tmValue int64
 	var err error
-
-	if proto.Equal(refNil) {
-		return MsgInvalidRule
-	}
 
 	if value.Equal(refNil) {
 		return MsgInvalidValue
