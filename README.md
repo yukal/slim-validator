@@ -1,7 +1,9 @@
 # slim-validator
-A simple validation package for Go
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/yukal/slim-validator.svg)](https://pkg.go.dev/github.com/yukal/slim-validator)
+[![Go Reference](.github/badges/badge-goref.svg)](https://pkg.go.dev/github.com/yukal/slim-validator)
+![Test Coverage](.github/badges/badge-coverage.svg)
+
+A simple Go package for validation and filtering data. See the [benchmark](BENCHMARK.md) test
 
 ## Install
 ```bash
